@@ -1,0 +1,13 @@
+name: env_zoo_calrissian
+channels:
+  - terradue
+  - conda-forge
+dependencies:
+  - black
+  - pre-commit
+  - isort
+  - flake8
+  - autoflake
+  - pylint
+  - nose2
+  - cwl-wrapper
