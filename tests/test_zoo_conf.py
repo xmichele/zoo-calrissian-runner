@@ -190,6 +190,6 @@ class TestCalrissianContext(unittest.TestCase):
         runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=inputs, outputs=None)
 
         self.assertEquals(
-            ["pre_stac_item", "post_stac_item", "aoi", "bands"],
-            runner.cwl.get_workflow_inputs(),
+            set(["pre_stac_item", "post_stac_item", "aoi", "bands"]),
+            set(runner.cwl.get_workflow_inputs()),
         )
