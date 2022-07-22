@@ -22,17 +22,17 @@ class Workflow:
         return inputs
 
 
+class ZooConf:
+    def __init__(self, conf):
+
+        self.conf = conf
+        self.workflow_id = self.conf["lenv"]["workflow_id"]
+
+
 class ZooInputs:
     def __init__(self, inputs):
 
         self.inputs = inputs
-        self.reserved_keys = ["_cwl", "_workflow_id"]
-
-    def get_cwl(self):
-        return self.get_input_value("_cwl")
-
-    def get_workflow_id(self):
-        return self.get_input_value("_workflow_id")
 
     def get_input_value(self, key):
 
@@ -44,40 +44,54 @@ class ZooInputs:
             pass
 
     def get_processing_parameters(self):
-
+        """Returns a list with the input parameters keys"""
         params = {}
 
         for key, value in self.inputs.items():
-            if key not in self.reserved_keys:
-                params[key] = value["value"]
+            params[key] = value["value"]
+
+        return params
+
+
+class ZooOutputs:
+    def __init__(self, outputs):
+
+        self.outputs = outputs
+
+    def get_output_parameters(self):
+        """Returns a list with the output parameters keys"""
+        params = {}
+
+        for key, value in self.outputs.items():
+            params[key] = value["value"]
 
         return params
 
 
 class ZooCalrissianRunner:
-    def __init__(self, zoo, conf, inputs, outputs):
+    def __init__(self, cwl, zoo, conf, inputs, outputs):
 
         self.zoo = zoo
-        self.conf = conf
+        self.conf = ZooConf(conf)
         self.inputs = ZooInputs(inputs)
-        self.outputs = outputs
-        self.cwl = Workflow(self.get_cwl(), self.get_workflow_id())
+        self.outputs = ZooOutputs(outputs)
+        self.cwl = Workflow(cwl, self.conf.workflow_id)
 
     def update_status(self, progress):
 
         self.zoo.update_status(self.conf, progress)
 
-    def get_cwl(self):
-
-        return self.inputs.get_cwl()
-
     def get_workflow_id(self):
 
-        return self.inputs.get_workflow_id()
+        return self.conf.workflow_id
 
     def get_processing_parameters(self):
-
+        """Gets the processing parameters from the inputs"""
         return self.inputs.get_processing_parameters()
+
+    def get_workflow_inputs(self):
+        """Returns the worflow inputs"""
+        return self.cwl.get_workflow_inputs()
 
     def execute(self):
 
@@ -100,11 +114,10 @@ class ZooCalrissianRunner:
 
     def wrap(self):
 
-        cwl = self.inputs.get_cwl()
-        workflow_id = self.inputs.get_workflow_id()
+        workflow_id = self.get_workflow_id()
 
         wf = Parser(
-            cwl=cwl,
+            cwl=self.cwl,
             output=None,
             stagein="/assets/stagein.cwl",
             stageout="/assets/stageout.cwl",

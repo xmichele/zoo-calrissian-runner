@@ -27,11 +27,31 @@ class TestCalrissianContext(unittest.TestCase):
                 def _(self, message):
                     print(f"invoked _ with {message}")
 
-            conf = {}
-            conf["lenv"] = {"message": ""}
             zoo = ZooStub()
 
             cls.zoo = zoo
+
+            conf = {}
+            conf["lenv"] = {"message": ""}
+            conf["lenv"] = {"workflow_id": "dnbr"}
+
+            cls.conf = conf
+
+            inputs = {}
+            inputs["param_1"] = {"value": "value1"}
+            inputs["param_2"] = {"value": "value2"}
+
+            cls.inputs = inputs
+
+            outputs = {}
+            outputs["an_output"] = {}
+
+            cls.outputs = outputs
+
+            with open("app-packages/dNBR.cwl", "r") as stream:
+                cwl = yaml.safe_load(stream)
+
+            cls.cwl = cwl
 
     def test_zoo_object(self):
 
@@ -39,7 +59,9 @@ class TestCalrissianContext(unittest.TestCase):
 
     def test_object_creation(self):
 
-        runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=None, outputs=None)
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=None, outputs=None
+        )
 
         self.assertIsInstance(runner, ZooCalrissianRunner)
 
@@ -49,7 +71,10 @@ class TestCalrissianContext(unittest.TestCase):
 
         inputs["_cwl"] = {"value": "value1"}
         inputs["_workflow_id"] = {"value": "dbnr"}
-        runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=inputs, outputs=None)
+
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
 
         with self.assertRaises(KeyError):
             runner.inputs.get_input_value("missing_key")
@@ -58,63 +83,43 @@ class TestCalrissianContext(unittest.TestCase):
 
         inputs = {}
 
-        inputs["_cwl"] = {"value": "a value"}
-        inputs["_workflow_id"] = {"value": "dbnr"}
         inputs["input_1"] = {"value": "value1"}
 
-        runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=inputs, outputs=None)
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
 
         self.assertEquals(runner.inputs.get_input_value("input_1"), "value1")
 
-    def test_load_real_cwl(self):
-
-        with open("app-packages/dNBR.cwl", "r") as stream:
-            cwl = yaml.safe_load(stream)
-
-        inputs = {}
-
-        inputs["_cwl"] = {"value": cwl}
-        inputs["_workflow_id"] = {"value": "dbnr"}
-        runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=inputs, outputs=None)
-
-        self.assertEquals(cwl, runner.get_cwl())
-
     def test_wrapper(self):
 
-        with open("app-packages/dNBR.cwl", "r") as stream:
-            cwl = yaml.safe_load(stream)
-
         inputs = {}
 
-        inputs["_cwl"] = {"value": cwl}
-        inputs["_workflow_id"] = {"value": "dbnr"}
+        inputs["param_1"] = {"value": "value1"}
+        inputs["param_2"] = {"value": "value2"}
 
-        runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=inputs, outputs=None)
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
 
         runner.wrap()
 
     def test_get_processing_parameters(self):
 
-        with open("app-packages/dNBR.cwl", "r") as stream:
-            cwl = yaml.safe_load(stream)
-
         inputs = {}
 
-        inputs["_cwl"] = {"value": cwl}
-        inputs["_workflow_id"] = {"value": "dbnr"}
         inputs["param_1"] = {"value": "value1"}
         inputs["param_2"] = {"value": "value2"}
 
-        runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=inputs, outputs=None)
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
 
         params = {"param_1": "value1", "param_2": "value2"}
 
         self.assertEquals(params, runner.get_processing_parameters())
 
     def test_get_workflow(self):
-
-        with open("app-packages/dNBR.cwl", "r") as stream:
-            cwl = yaml.safe_load(stream)
 
         ref_cwl = {
             "class": "Workflow",
@@ -168,28 +173,52 @@ class TestCalrissianContext(unittest.TestCase):
                 },
             },
         }
+
         inputs = {}
 
-        inputs["_cwl"] = {"value": cwl}
-        inputs["_workflow_id"] = {"value": "dnbr"}
+        inputs["param_1"] = {"value": "value1"}
+        inputs["param_2"] = {"value": "value2"}
 
-        runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=inputs, outputs=None)
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
 
         self.assertEquals(ref_cwl, runner.cwl.get_workflow())
 
-    def test_get_workflow_inputs(self):
+    def test_get_wrong_workflow(self):
 
-        with open("app-packages/dNBR.cwl", "r") as stream:
-            cwl = yaml.safe_load(stream)
+        conf = {}
+        conf["lenv"] = {"message": ""}
+        conf["lenv"] = {"workflow_id": "not_available"}
+
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=conf, inputs=self.inputs, outputs=None
+        )
+
+        self.assertIsNone(runner.cwl.get_workflow())
+
+    def test_get_workflow_inputs(self):
 
         inputs = {}
 
-        inputs["_cwl"] = {"value": cwl}
-        inputs["_workflow_id"] = {"value": "dnbr"}
-
-        runner = ZooCalrissianRunner(zoo=self.zoo, conf=None, inputs=inputs, outputs=None)
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
 
         self.assertEquals(
             set(["pre_stac_item", "post_stac_item", "aoi", "bands"]),
             set(runner.cwl.get_workflow_inputs()),
+        )
+
+    def test_get_workflow_inputs_bis(self):
+
+        inputs = {}
+
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
+
+        self.assertEquals(
+            set(["pre_stac_item", "post_stac_item", "aoi", "bands"]),
+            set(runner.get_workflow_inputs()),
         )
