@@ -17,6 +17,8 @@ RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
 
 RUN chown -R mambauser:1000 /opt/conda/
 
+COPY ./assets /assets
+
 USER mambauser
 
 ADD .devcontainer/environment.yml /tmp/environment.yml
