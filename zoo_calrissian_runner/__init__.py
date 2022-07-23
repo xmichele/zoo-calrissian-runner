@@ -86,11 +86,11 @@ class ZooCalrissianRunner:
         return self.conf.workflow_id
 
     def get_processing_parameters(self):
-        """Gets the processing parameters from the inputs"""
+        """Gets the processing parameters from the zoo inputs"""
         return self.inputs.get_processing_parameters()
 
     def get_workflow_inputs(self):
-        """Returns the worflow inputs"""
+        """Returns the CWL worflow inputs"""
         return self.cwl.get_workflow_inputs()
 
     def execute(self):

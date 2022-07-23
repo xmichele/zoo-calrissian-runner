@@ -1,0 +1,27 @@
+
+package:
+  name: zoo-calrissian-runner
+  version: "{{ load_setup_py_data().version }}"
+
+source:
+  path: ..
+
+build:
+  script: python setup.py install
+  number: 1
+  noarch: python
+
+requirements:
+  host:
+    - python
+    - setuptools
+
+  run:
+    - python
+    - pycalrissian
+    - cwl-wrapper
+
+about:
+  home: https://github.com/EOEPCA/zoo-calrissian-runner
+  license: Apache
+  summary: "Zoo project calrissian runner"
