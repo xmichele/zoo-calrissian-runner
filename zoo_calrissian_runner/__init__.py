@@ -1,4 +1,12 @@
+import os
+import uuid
+from datetime import datetime
+
 from cwl_wrapper.parser import Parser
+from loguru import logger
+from pycalrissian.context import CalrissianContext
+from pycalrissian.execution import CalrissianExecution
+from pycalrissian.job import CalrissianJob
 
 
 class Workflow:
@@ -77,6 +85,36 @@ class ZooCalrissianRunner:
         self.outputs = ZooOutputs(outputs)
         self.cwl = Workflow(cwl, self.conf.workflow_id)
 
+        self.storage_class = os.environ.get("STORAGE_CLASS", "longhorn")
+        self.monitor_interval = 30
+
+    @staticmethod
+    def shorten_namespace(value: str) -> str:
+
+        while len(value) > 63:
+            value = value[:-1]
+            while value.endswith("-"):
+                value = value[:-1]
+        return value
+
+    def get_volume_size(self) -> str:
+        # TODO how to determine the "right" volume size
+        return "10G"
+
+    def get_max_cores(self) -> int:
+        # TODO how many cores for the CWL execution?
+        return 2
+
+    def get_max_ram(self) -> str:
+        # TODO how much cores for the CWL execution?
+        return "4G"
+
+    def get_namespace_name(self):
+
+        self.shorten_namespace(
+            f"{self.conf.workflow_id}-{str(datetime.now().timestamp()).replace('.', '')}-{uuid.uuid4()}"
+        )
+
     def update_status(self, progress):
 
         self.zoo.update_status(self.conf, progress)
@@ -95,22 +133,77 @@ class ZooCalrissianRunner:
 
     def execute(self):
 
+        logger.info("execution started")
         self.update_status(2)
 
-        self.wrap()
+        logger.info("wrap CWL workfow with stage-in/out steps")
+        wrapped_worflow = self.wrap()
+        self.update_status(5)
 
-        # do something
-        print("hello world!")
+        logger.info("create kubernetes namespace for Calrissian execution")
 
-        self.update_status(20)
+        # TODO how do we manage the secrets
+        secret_config = {}
 
-        print("again")
+        session = CalrissianContext(
+            namespace=self.get_namespace_name(),
+            storage_class=self.storage_class,
+            volume_size=self.get_volume_size(),
+            image_pull_secrets=secret_config,
+        )
+
+        self.update_status(10)
+
+        logger.info("create Calrissian job")
+        job = CalrissianJob(
+            cwl=wrapped_worflow,
+            params=self.get_processing_parameters(),
+            runtime_context=session,
+            cwl_entry_point=self.conf.workflow_id,
+            max_cores=self.get_max_cores(),
+            max_ram=self.get_max_ram(),
+        )
+
+        self.update_status(18)
+
+        logger.info("execution")
+        execution = CalrissianExecution(job=job, runtime_context=session)
+        execution.submit()
+
+        execution.monitor(interval=self.monitor_interval)
+
+        if execution.is_complete():
+            logger.info("execution complete")
+
+        if execution.is_succeeded():
+            exit_value = self.zoo.SERVICE_SUCCEEDED
+        else:
+            exit_value = self.zoo.SERVICE_FAILED
+
+        self.update_status(90)
+
+        logger.info("retrieve execution logs")
+        execution.get_log()
+
+        self.update_status(93)
+
+        logger.info("retrieve usage report")
+        execution.get_usage_report()
+
+        self.update_status(95)
+
+        logger.info("retrieve outputs")
+        output = execution.get_output()
+        self.outputs["Result"]["value"] = output
+
+        self.update_status(97)
+
+        logger.info("clean-up kubernetes resources")
+        session.dispose()
 
         self.update_status(100)
 
-        self.outputs["Result"]["value"] = "a value"
-
-        return True
+        return exit_value
 
     def wrap(self):
 
@@ -119,10 +212,10 @@ class ZooCalrissianRunner:
         wf = Parser(
             cwl=self.cwl,
             output=None,
-            stagein="/assets/stagein.cwl",
-            stageout="/assets/stageout.cwl",
-            maincwl="/assets/main.cwl",
-            rulez="/assets/rules.yaml",
+            stagein=os.environ.get("WRAPPER_STAGE_IN", "/assets/stagein.cwl"),
+            stageout=os.environ.get("WRAPPER_STAGE_OUT", "/assets/stageout.cwl"),
+            maincwl=os.environ.get("WRAPPER_MAIN", "/assets/main.cwl"),
+            rulez=os.environ.get("WRAPPER_RULES", "/assets/rules.yaml"),
             assets=None,
             workflow_id=workflow_id,
         )
