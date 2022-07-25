@@ -7,11 +7,11 @@ class ExecutionHandler(ABC):
         pass
 
     @abstractmethod
-    def get_env_vars(self):
+    def get_pod_env_vars(self):
         pass
 
     @abstractmethod
-    def get_node_selector(self):
+    def get_pod_node_selector(self):
         pass
 
     @abstractmethod

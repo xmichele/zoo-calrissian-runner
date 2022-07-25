@@ -1,3 +1,4 @@
+import base64
 import os
 import uuid
 from datetime import datetime
@@ -15,14 +16,34 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
     def __ini__(self):
         pass
 
-    def get_env_vars(self):
-        return super().get_env_vars()
+    def get_pod_env_vars(self):
+        return {"A": "1", "B": "1"}
 
-    def get_node_selector(self):
-        return super().get_node_selector()
+    def get_pod_node_selector(self):
+        return None
 
     def get_secrets(self):
-        return super().get_secrets()
+
+        username = ""
+        password = ""
+        email = ""
+        registry = "https://index.docker.io/v1/"
+
+        auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("utf-8")
+
+        secret_config = {
+            "auths": {
+                registry: {
+                    "username": username,
+                    "password": password,
+                    "email": email,
+                    "auth": auth,
+                },
+                "registry.gitlab.com": {"auth": ""},  # noqa: E501
+            }
+        }
+
+        return secret_config
 
     def handle_log(self):
 
@@ -190,6 +211,10 @@ class ZooCalrissianRunner:
             cwl_entry_point=self.conf.workflow_id,
             max_cores=self.get_max_cores(),
             max_ram=self.get_max_ram(),
+            pod_env_vars=self.handler.get_pod_env_vars(),
+            pod_node_selector=self.handler.get_pod_node_selector(),
+            debug=True,
+            no_read_only=True,
         )
 
         self.update_status(18)
