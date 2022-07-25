@@ -12,3 +12,7 @@ dependencies:
   - nose2
   - cwl-wrapper
   - pycalrissian
+  - pip
+  - pip:
+    - kubernetes
+  - loguru

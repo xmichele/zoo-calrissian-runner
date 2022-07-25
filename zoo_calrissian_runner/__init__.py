@@ -8,6 +8,32 @@ from pycalrissian.context import CalrissianContext
 from pycalrissian.execution import CalrissianExecution
 from pycalrissian.job import CalrissianJob
 
+from zoo_calrissian_runner.handlers import ExecutionHandler
+
+
+class CalrissianRunnerExecutionHandler(ExecutionHandler):
+    def __ini__(self):
+        pass
+
+    def get_env_vars(self):
+        return super().get_env_vars()
+
+    def get_node_selector(self):
+        return super().get_node_selector()
+
+    def get_secrets(self):
+        return super().get_secrets()
+
+    def handle_log(self):
+
+        return super().handle_log()
+
+    def handle_output(self):
+        return super().handle_output()
+
+    def handle_usage_report(self):
+        return super().handle_usage_report()
+
 
 class Workflow:
     def __init__(self, cwl, workflow_id):
@@ -85,6 +111,8 @@ class ZooCalrissianRunner:
         self.outputs = ZooOutputs(outputs)
         self.cwl = Workflow(cwl, self.conf.workflow_id)
 
+        self.handler = CalrissianRunnerExecutionHandler()
+
         self.storage_class = os.environ.get("STORAGE_CLASS", "longhorn")
         self.monitor_interval = 30
 
@@ -143,7 +171,7 @@ class ZooCalrissianRunner:
         logger.info("create kubernetes namespace for Calrissian execution")
 
         # TODO how do we manage the secrets
-        secret_config = {}
+        secret_config = self.handler.get_secrets()
 
         session = CalrissianContext(
             namespace=self.get_namespace_name(),
@@ -183,17 +211,16 @@ class ZooCalrissianRunner:
         self.update_status(90)
 
         logger.info("retrieve execution logs")
-        execution.get_log()
-
+        self.handler.handle_log(execution.get_log())
         self.update_status(93)
 
         logger.info("retrieve usage report")
-        execution.get_usage_report()
-
+        self.handler.handle_usage_report(execution.get_usage_report())
         self.update_status(95)
 
         logger.info("retrieve outputs")
         output = execution.get_output()
+        self.handler.handle_output(output)
         self.outputs["Result"]["value"] = output
 
         self.update_status(97)
