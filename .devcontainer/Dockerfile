@@ -19,6 +19,8 @@ RUN chown -R mambauser:1000 /opt/conda/
 
 COPY ./assets /assets
 
+RUN chown -R mambauser:1000 /assets
+
 USER mambauser
 
 ADD .devcontainer/environment.yml /tmp/environment.yml

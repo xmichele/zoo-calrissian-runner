@@ -1,7 +1,7 @@
-import base64
 import os
 import uuid
 from datetime import datetime
+from typing import Union
 
 from cwl_wrapper.parser import Parser
 from loguru import logger
@@ -10,50 +10,6 @@ from pycalrissian.execution import CalrissianExecution
 from pycalrissian.job import CalrissianJob
 
 from zoo_calrissian_runner.handlers import ExecutionHandler
-
-
-class CalrissianRunnerExecutionHandler(ExecutionHandler):
-    def __ini__(self):
-        pass
-
-    def get_pod_env_vars(self):
-        return {"A": "1", "B": "1"}
-
-    def get_pod_node_selector(self):
-        return None
-
-    def get_secrets(self):
-
-        username = ""
-        password = ""
-        email = ""
-        registry = "https://index.docker.io/v1/"
-
-        auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("utf-8")
-
-        secret_config = {
-            "auths": {
-                registry: {
-                    "username": username,
-                    "password": password,
-                    "email": email,
-                    "auth": auth,
-                },
-                "registry.gitlab.com": {"auth": ""},  # noqa: E501
-            }
-        }
-
-        return secret_config
-
-    def handle_log(self):
-
-        return super().handle_log()
-
-    def handle_output(self):
-        return super().handle_output()
-
-    def handle_usage_report(self):
-        return super().handle_usage_report()
 
 
 class Workflow:
@@ -68,11 +24,15 @@ class Workflow:
             if self.workflow_id in [elem["id"]]:
                 return elem
 
-    def get_workflow_inputs(self):
+    def get_workflow_inputs(self, mandatory=False):
 
         inputs = []
-        for inp in self.get_workflow()["inputs"]:
-            inputs.append(inp)
+        for key, inp in self.get_workflow()["inputs"].items():
+            if mandatory:
+                if "default" not in list(inp.keys()) and inp["type"][-1] != "?":
+                    inputs.append(key)
+            else:
+                inputs.append(key)
 
         return inputs
 
@@ -122,9 +82,18 @@ class ZooOutputs:
 
         return params
 
+    def set_output(self, value):
+
+        if "Result" in self.outputs.keys():
+            self.outputs["Result"]["value"] = value
+        else:
+            self.outputs["Result"] = {"value": value}
+
 
 class ZooCalrissianRunner:
-    def __init__(self, cwl, zoo, conf, inputs, outputs):
+    def __init__(
+        self, cwl, zoo, conf, inputs, outputs, execution_handler: Union[ExecutionHandler, None] = None
+    ):
 
         self.zoo = zoo
         self.conf = ZooConf(conf)
@@ -132,10 +101,11 @@ class ZooCalrissianRunner:
         self.outputs = ZooOutputs(outputs)
         self.cwl = Workflow(cwl, self.conf.workflow_id)
 
-        self.handler = CalrissianRunnerExecutionHandler()
+        self.handler = execution_handler
 
         self.storage_class = os.environ.get("STORAGE_CLASS", "longhorn")
         self.monitor_interval = 30
+        self._namespace_name = None
 
     @staticmethod
     def shorten_namespace(value: str) -> str:
@@ -160,9 +130,13 @@ class ZooCalrissianRunner:
 
     def get_namespace_name(self):
 
-        self.shorten_namespace(
-            f"{self.conf.workflow_id}-{str(datetime.now().timestamp()).replace('.', '')}-{uuid.uuid4()}"
-        )
+        if self._namespace_name is None:
+            return self.shorten_namespace(
+                f"{self.conf.workflow_id}-"
+                f"{str(datetime.now().timestamp()).replace('.', '')}-{uuid.uuid4()}"
+            )
+        else:
+            return self._namespace_name
 
     def update_status(self, progress):
 
@@ -176,11 +150,22 @@ class ZooCalrissianRunner:
         """Gets the processing parameters from the zoo inputs"""
         return self.inputs.get_processing_parameters()
 
-    def get_workflow_inputs(self):
+    def get_workflow_inputs(self, mandatory=False):
         """Returns the CWL worflow inputs"""
-        return self.cwl.get_workflow_inputs()
+        return self.cwl.get_workflow_inputs(mandatory=mandatory)
+
+    def assert_parameters(self):
+        # checks all mandatory processing parameters were sent
+        return all(
+            elem in list(self.get_processing_parameters().keys())
+            for elem in self.get_workflow_inputs(mandatory=True)
+        )
 
     def execute(self):
+
+        if not (self.assert_parameters()):
+            logger.error("Mandatory parameters missing")
+            return self.zoo.SERVICE_FAILED
 
         logger.info("execution started")
         self.update_status(2)
@@ -194,21 +179,35 @@ class ZooCalrissianRunner:
         # TODO how do we manage the secrets
         secret_config = self.handler.get_secrets()
 
+        namespace = self.get_namespace_name()
+
+        self.handler.set_job_id(job_id=namespace)
+
+        logger.info(f"namespace: {namespace}")
+
         session = CalrissianContext(
-            namespace=self.get_namespace_name(),
+            namespace=namespace,
             storage_class=self.storage_class,
             volume_size=self.get_volume_size(),
             image_pull_secrets=secret_config,
         )
-
+        session.initialise()
         self.update_status(10)
+
+        processing_parameters = {
+            "process": namespace,
+            **self.get_processing_parameters(),
+            **self.handler.get_additional_parameters(),
+        }
+
+        # checks if all parameters where provided
 
         logger.info("create Calrissian job")
         job = CalrissianJob(
             cwl=wrapped_worflow,
-            params=self.get_processing_parameters(),
+            params=processing_parameters,
             runtime_context=session,
-            cwl_entry_point=self.conf.workflow_id,
+            cwl_entry_point="main",
             max_cores=self.get_max_cores(),
             max_ram=self.get_max_ram(),
             pod_env_vars=self.handler.get_pod_env_vars(),
@@ -235,23 +234,20 @@ class ZooCalrissianRunner:
 
         self.update_status(90)
 
-        logger.info("retrieve execution logs")
-        self.handler.handle_log(execution.get_log())
-        self.update_status(93)
-
-        logger.info("retrieve usage report")
-        self.handler.handle_usage_report(execution.get_usage_report())
-        self.update_status(95)
-
-        logger.info("retrieve outputs")
+        logger.info("handle outputs execution logs")
         output = execution.get_output()
-        self.handler.handle_output(output)
-        self.outputs["Result"]["value"] = output
+        self.outputs.set_output(output)
+
+        self.handler.handle_outputs(
+            log=execution.get_log(),
+            output=output,
+            usage_report=execution.get_usage_report(),
+        )
 
         self.update_status(97)
 
         logger.info("clean-up kubernetes resources")
-        session.dispose()
+        # session.dispose()
 
         self.update_status(100)
 
@@ -262,14 +258,14 @@ class ZooCalrissianRunner:
         workflow_id = self.get_workflow_id()
 
         wf = Parser(
-            cwl=self.cwl,
+            cwl=self.cwl.cwl,
             output=None,
-            stagein=os.environ.get("WRAPPER_STAGE_IN", "/assets/stagein.cwl"),
-            stageout=os.environ.get("WRAPPER_STAGE_OUT", "/assets/stageout.cwl"),
-            maincwl=os.environ.get("WRAPPER_MAIN", "/assets/main.cwl"),
+            stagein=os.environ.get("WRAPPER_STAGE_IN", "/assets/stagein.yaml"),
+            stageout=os.environ.get("WRAPPER_STAGE_OUT", "/assets/stageout.yaml"),
+            maincwl=os.environ.get("WRAPPER_MAIN", "/assets/maincwl.yaml"),
             rulez=os.environ.get("WRAPPER_RULES", "/assets/rules.yaml"),
             assets=None,
             workflow_id=workflow_id,
         )
 
-        return wf
+        return wf.out

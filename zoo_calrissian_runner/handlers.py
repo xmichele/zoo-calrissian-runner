@@ -2,6 +2,13 @@ from abc import ABC, abstractmethod
 
 
 class ExecutionHandler(ABC):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        self.job_id = None
+
+    def set_job_id(self, job_id):
+        self.job_id = job_id
+
     @abstractmethod
     def get_secrets(self):
         pass
@@ -15,13 +22,9 @@ class ExecutionHandler(ABC):
         pass
 
     @abstractmethod
-    def handle_log(self, execution_log):
+    def handle_outputs(self, execution_log, output, usage_report):
         pass
 
     @abstractmethod
-    def handle_output(self, output):
-        pass
-
-    @abstractmethod
-    def handle_usage_report(self, usage_report):
+    def get_additional_parameters(self):
         pass
