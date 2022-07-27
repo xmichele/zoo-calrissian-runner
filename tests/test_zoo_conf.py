@@ -2,6 +2,7 @@ import tempfile
 import unittest
 
 import yaml
+from cwl_utils.parser.cwl_v1_0 import Workflow
 
 from zoo_calrissian_runner import ZooCalrissianRunner
 
@@ -102,7 +103,9 @@ class TestCalrissianContext(unittest.TestCase):
             cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
         )
 
-        runner.wrap()
+        wrapped = runner.wrap()
+
+        self.assertIsInstance(wrapped, dict)
 
     def test_get_processing_parameters(self):
 
@@ -121,59 +124,6 @@ class TestCalrissianContext(unittest.TestCase):
 
     def test_get_workflow(self):
 
-        ref_cwl = {
-            "class": "Workflow",
-            "label": "dNBR - produce the delta normalized difference between NIR and SWIR 22 over a pair of stac items",  # noqa: E501
-            "doc": "dNBR - produce the delta normalized difference between NIR and SWIR 22 over a pair of stac items",  # noqa: E501
-            "id": "dnbr",
-            "requirements": [
-                {"class": "ScatterFeatureRequirement"},
-                {"class": "SubworkflowFeatureRequirement"},
-                {"class": "MultipleInputFeatureRequirement"},
-            ],
-            "inputs": {
-                "pre_stac_item": {"doc": "Pre-event Sentinel-2 item", "type": "string"},
-                "post_stac_item": {
-                    "doc": "Post-event Sentinel-2 item",
-                    "type": "string",
-                },
-                "aoi": {"doc": "area of interest as a bounding box", "type": "string"},
-                "bands": {"type": "string[]", "default": ["B8A", "B12", "SCL"]},
-            },
-            "outputs": {"stac": {"outputSource": ["node_stac/stac"], "type": "Directory"}},
-            "steps": {
-                "node_nbr": {
-                    "run": "#nbr_wf",
-                    "in": {
-                        "stac_item": ["pre_stac_item", "post_stac_item"],
-                        "aoi": "aoi",
-                    },
-                    "out": ["nbr"],
-                    "scatter": "stac_item",
-                    "scatterMethod": "dotproduct",
-                },
-                "node_dnbr": {
-                    "run": "#dnbr_clt",
-                    "in": {"tifs": {"source": "node_nbr/nbr"}},
-                    "out": ["dnbr"],
-                },
-                "node_cog": {
-                    "run": "#gdal_cog_clt",
-                    "in": {"tif": {"source": ["node_dnbr/dnbr"]}},
-                    "out": ["cog_tif"],
-                },
-                "node_stac": {
-                    "run": "#stacme_clt",
-                    "in": {
-                        "tif": {"source": ["node_cog/cog_tif"]},
-                        "pre_stac_item": "pre_stac_item",
-                        "post_stac_item": "post_stac_item",
-                    },
-                    "out": ["stac"],
-                },
-            },
-        }
-
         inputs = {}
 
         inputs["param_1"] = {"value": "value1"}
@@ -182,8 +132,8 @@ class TestCalrissianContext(unittest.TestCase):
         runner = ZooCalrissianRunner(
             cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
         )
-
-        self.assertEquals(ref_cwl, runner.cwl.get_workflow())
+        print(type(runner.cwl.get_workflow()))
+        self.assertIsInstance(runner.cwl.get_workflow(), Workflow)
 
     def test_get_wrong_workflow(self):
 
@@ -194,8 +144,8 @@ class TestCalrissianContext(unittest.TestCase):
         runner = ZooCalrissianRunner(
             cwl=self.cwl, zoo=self.zoo, conf=conf, inputs=self.inputs, outputs=None
         )
-
-        self.assertIsNone(runner.cwl.get_workflow())
+        with self.assertRaises(ValueError):
+            runner.cwl.get_workflow()
 
     def test_get_workflow_inputs(self):
 
@@ -222,3 +172,48 @@ class TestCalrissianContext(unittest.TestCase):
             set(["pre_stac_item", "post_stac_item", "aoi", "bands"]),
             set(runner.get_workflow_inputs()),
         )
+
+    def test_get_only_mandatory_inputs(self):
+
+        inputs = ()
+
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
+        self.assertTrue(
+            set(runner.get_workflow_inputs(mandatory=True)), set(["pre_stac_item", "post_stac_item"])
+        )
+
+    def test_assert_all_parameters_missing(self):
+
+        inputs = {
+            "post_stac_item": {
+                "value": "https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs/items/S2B_53HPA_20210723_0_L2A"  # noqa: E501
+            },
+            "aoi": {"value": "136.659,-35.96,136.923,-35.791"},
+        }
+
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
+        print(list(runner.get_processing_parameters().keys()))
+        print(runner.get_workflow_inputs(mandatory=True))
+        self.assertFalse(runner.assert_parameters())
+
+    def test_assert_all_parameters(self):
+
+        inputs = {
+            "post_stac_item": {
+                "value": "https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs/items/S2B_53HPA_20210723_0_L2A"  # noqa: E501
+            },  # noqa: E501
+            "pre_stac_item": {
+                "value": "https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs/items/S2B_53HPA_20210703_0_L2A"  # noqa: E501
+            },  # noqa: E501
+            "aoi": {"value": "136.659,-35.96,136.923,-35.791"},
+        }
+
+        runner = ZooCalrissianRunner(
+            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
+        )
+
+        self.assertTrue(runner.assert_parameters())

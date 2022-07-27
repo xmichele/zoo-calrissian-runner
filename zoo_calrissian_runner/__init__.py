@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Union
 
+from cwl_utils.parser import load_document_by_yaml
 from cwl_wrapper.parser import Parser
 from loguru import logger
 from pycalrissian.context import CalrissianContext
@@ -15,25 +16,31 @@ from zoo_calrissian_runner.handlers import ExecutionHandler
 class Workflow:
     def __init__(self, cwl, workflow_id):
 
-        self.cwl = cwl
+        self.raw_cwl = cwl
+        self.cwl = load_document_by_yaml(cwl, "io://")
         self.workflow_id = workflow_id
 
     def get_workflow(self):
 
-        for elem in self.cwl["$graph"]:
-            if self.workflow_id in [elem["id"]]:
-                return elem
+        ids = [elem.id.split("#")[-1] for elem in self.cwl]
+
+        return self.cwl[ids.index(self.workflow_id)]
 
     def get_workflow_inputs(self, mandatory=False):
 
         inputs = []
-        for key, inp in self.get_workflow()["inputs"].items():
+        for inp in self.get_workflow().inputs:
             if mandatory:
-                if "default" not in list(inp.keys()) and inp["type"][-1] != "?":
-                    inputs.append(key)
-            else:
-                inputs.append(key)
+                if inp.default is not None:
+                    continue
 
+                # test optional array of string
+                elif inp.type != ["null", "string"]:
+                    inputs.append(inp.id.split("/")[-1])
+                else:
+                    continue
+            else:
+                inputs.append(inp.id.split("/")[-1])
         return inputs
 
 
@@ -256,9 +263,9 @@ class ZooCalrissianRunner:
     def wrap(self):
 
         workflow_id = self.get_workflow_id()
-
+        print(workflow_id)
         wf = Parser(
-            cwl=self.cwl.cwl,
+            cwl=self.cwl.raw_cwl,
             output=None,
             stagein=os.environ.get("WRAPPER_STAGE_IN", "/assets/stagein.yaml"),
             stageout=os.environ.get("WRAPPER_STAGE_OUT", "/assets/stageout.yaml"),
