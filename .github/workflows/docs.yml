@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip --install-dir /tmp install mkdocs-material mkdocs-jupyter
+          pip install --install-dir /tmp mkdocs-material mkdocs-jupyter
           python setup.py install
       - name: update API docs
         run: |
