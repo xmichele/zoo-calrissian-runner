@@ -8,4 +8,5 @@ dependencies:
     - cwl-utils
     - mkdocs-material
     - mkdocs-jupyter
+    - pdocs
   - loguru
