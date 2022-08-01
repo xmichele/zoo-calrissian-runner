@@ -24,6 +24,5 @@ nav:
   - Introduction: 'index.md'
   - Installation: 'installation.md'
   - API:
-    - pycalrissian.CalrissianContext : api/pycalrissian/context.md
-    - pycalrissian.CalrissianJob : api/pycalrissian/job.md
-    - pycalrissian.ExecutionJob : api/pycalrissian/execution.md
+    - zoo_calrissian_runner: api/zoo_calrissian_runner/index.md
+    - handlers: api/zoo_calrissian_runner/handlers.md
