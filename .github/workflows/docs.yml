@@ -25,7 +25,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pdocs kubernetes loguru pyyaml
+          pip install pdocs kubernetes loguru pyyaml cwl-utils mamba
+          mamba install cwl-wrapper pycalrissian -c eoepca -c terradue
           python setup.py install
       - name: update API docs
         run: |
