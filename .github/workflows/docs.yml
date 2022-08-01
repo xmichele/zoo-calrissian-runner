@@ -22,7 +22,7 @@ jobs:
         with:
             environment-file: docs/environment.yml
             environment-name: env_zoo_calrissian
-            channels: conda-forge,terradue,eoepca
+            channels: terradue,eoepca,conda-forge
 
       - name: Install dependencies
         run: |
