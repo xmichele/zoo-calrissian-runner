@@ -6,4 +6,6 @@ dependencies:
     - kubernetes
     - pdocs
     - cwl-utils
+    - mkdocs-material
+    - mkdocs-jupyter
   - loguru

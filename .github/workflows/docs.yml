@@ -25,9 +25,8 @@ jobs:
             channels: terradue,eoepca,conda-forge
             channel-priority: flexible
 
-      - name: Install dependencies
+      - name: Install project
         run: |
-          pip install --install-dir /tmp mkdocs-material mkdocs-jupyter
           python setup.py install
       - name: update API docs
         run: |
