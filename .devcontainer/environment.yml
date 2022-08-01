@@ -16,4 +16,6 @@ dependencies:
   - pip
   - pip:
     - kubernetes
+    - pdocs
+    - cwl-utils
   - loguru

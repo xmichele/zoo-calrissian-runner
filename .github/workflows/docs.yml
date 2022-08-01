@@ -15,23 +15,18 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout master
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
+      - name: Install Conda environment from environment.yml
+        uses: mamba-org/provision-with-micromamba@main
 
       - name: Install dependencies
         run: |
-          pip install pdocs kubernetes loguru pyyaml cwl-utils mamba
-          mamba install cwl-wrapper pycalrissian -c eoepca -c terradue
+          micromamba create -f .devcontainer/environment.yml
+          pip install mkdocs-material mkdocs-jupyter
           python setup.py install
       - name: update API docs
         run: |
           pdocs as_markdown --output_dir docs/api/ --exclude_source --overwrite zoo-calrissian-runner
 
-      - run: pip install mkdocs-material
-      - run: pip install mkdocs-jupyter
       - run: mkdocs gh-deploy --force
