@@ -21,8 +21,11 @@ jobs:
         uses: mamba-org/provision-with-micromamba@main
 
       - name: Install dependencies
+        with:
+            environment-file: .devcontainer/environment.yml
+            environment-name: env_zoo_calrissian
+            channels: conda-forge,terradue,eoepca
         run: |
-          micromamba create -f .devcontainer/environment.yml
           pip install mkdocs-material mkdocs-jupyter
           python setup.py install
       - name: update API docs
