@@ -23,10 +23,11 @@ jobs:
             environment-file: docs/environment.yml
             environment-name: env_zoo_calrissian
             channels: terradue,eoepca,conda-forge
+            channel-priority: flexible
 
       - name: Install dependencies
         run: |
-          pip install mkdocs-material mkdocs-jupyter
+          pip --install-dir /tmp install mkdocs-material mkdocs-jupyter
           python setup.py install
       - name: update API docs
         run: |
