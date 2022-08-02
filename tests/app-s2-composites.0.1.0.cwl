@@ -271,6 +271,7 @@ $graph:
 cwlVersion: v1.0
 $namespaces:
   s: https://schema.org/
+  io: https://me.io
 s:softwareVersion: 0.1.0
 schemas:
   - http://schema.org/version/9.0/schemaorg-current-http.rdf

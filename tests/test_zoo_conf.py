@@ -181,7 +181,8 @@ class TestCalrissianContext(unittest.TestCase):
             cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
         )
         self.assertTrue(
-            set(runner.get_workflow_inputs(mandatory=True)), set(["pre_stac_item", "post_stac_item"])
+            set(runner.get_workflow_inputs(mandatory=True)),
+            set(["pre_stac_item", "post_stac_item"]),
         )
 
     def test_assert_all_parameters_missing(self):
