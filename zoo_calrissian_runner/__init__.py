@@ -263,7 +263,7 @@ class ZooCalrissianRunner:
     def wrap(self):
 
         workflow_id = self.get_workflow_id()
-        print(workflow_id)
+
         wf = Parser(
             cwl=self.cwl.raw_cwl,
             output=None,
