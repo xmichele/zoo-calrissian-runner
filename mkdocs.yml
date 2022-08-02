@@ -1,0 +1,28 @@
+site_name: ZOO Calrissian Runner
+site_description: 'Zoo Calrissian Runner'
+# Repository
+
+repo_name: 'eoepca/zoo-calrissian-runner'
+repo_url: 'https://github.com/EOEPCA/zoo-calrissian-runner'
+edit_uri: 'blob/main/docs/src/'
+site_url: 'https://eoepca.github.io/zoo-calrissian-runner/'
+
+
+theme:
+  name: material
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+plugins:
+  - search
+  - mkdocs-jupyter
+
+nav:
+  - Introduction: 'index.md'
+  - Installation: 'installation.md'
+  - API:
+    - zoo_calrissian_runner: api/zoo_calrissian_runner/index.md
+    - handlers: api/zoo_calrissian_runner/handlers.md

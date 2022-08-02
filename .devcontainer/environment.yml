@@ -2,6 +2,7 @@ name: env_zoo_calrissian
 channels:
   - terradue
   - conda-forge
+  - eoepca
 dependencies:
   - black
   - pre-commit
@@ -10,4 +11,11 @@ dependencies:
   - autoflake
   - pylint
   - nose2
-  - cwl-wrapper
+  - cwl-wrapper >= 0.10.0
+  - pycalrissian
+  - pip
+  - pip:
+    - kubernetes
+    - pdocs
+    - cwl-utils
+  - loguru
