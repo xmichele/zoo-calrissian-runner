@@ -35,7 +35,7 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
 
     def get_secrets(self):
 
-        username = os.getenv("CR_USERNANE", None)
+        username = os.getenv("CR_USERNAME", None)
         password = os.getenv("CR_TOKEN", None)
         registry = os.getenv("CR_ENDPOINT", None)
 
