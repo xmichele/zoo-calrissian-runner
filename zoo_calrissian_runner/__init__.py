@@ -12,6 +12,23 @@ from pycalrissian.job import CalrissianJob
 
 from zoo_calrissian_runner.handlers import ExecutionHandler
 
+try:
+    import zoo
+except ImportError:
+
+    class ZooStub(object):
+        def __init__(self):
+            self.SERVICE_SUCCEEDED = 3
+            self.SERVICE_FAILED = 4
+
+        def update_status(self, conf, progress):
+            print(f"Status {progress}")
+
+        def _(self, message):
+            print(f"invoked _ with {message}")
+
+    zoo = ZooStub()
+
 
 class Workflow:
     def __init__(self, cwl, workflow_id):
@@ -99,10 +116,9 @@ class ZooOutputs:
 
 class ZooCalrissianRunner:
     def __init__(
-        self, cwl, zoo, conf, inputs, outputs, execution_handler: Union[ExecutionHandler, None] = None
+        self, cwl, conf, inputs, outputs, execution_handler: Union[ExecutionHandler, None] = None
     ):
 
-        self.zoo = zoo
         self.conf = ZooConf(conf)
         self.inputs = ZooInputs(inputs)
         self.outputs = ZooOutputs(outputs)
@@ -147,7 +163,7 @@ class ZooCalrissianRunner:
 
     def update_status(self, progress):
 
-        self.zoo.update_status(self.conf, progress)
+        zoo.update_status(self.conf, progress)
 
     def get_workflow_id(self):
 
@@ -172,7 +188,7 @@ class ZooCalrissianRunner:
 
         if not (self.assert_parameters()):
             logger.error("Mandatory parameters missing")
-            return self.zoo.SERVICE_FAILED
+            return zoo.SERVICE_FAILED
 
         logger.info("execution started")
         self.update_status(2)
@@ -235,9 +251,9 @@ class ZooCalrissianRunner:
             logger.info("execution complete")
 
         if execution.is_succeeded():
-            exit_value = self.zoo.SERVICE_SUCCEEDED
+            exit_value = zoo.SERVICE_SUCCEEDED
         else:
-            exit_value = self.zoo.SERVICE_FAILED
+            exit_value = zoo.SERVICE_FAILED
 
         self.update_status(90)
 
