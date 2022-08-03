@@ -109,7 +109,6 @@ def dnbr(conf, inputs, outputs):
 
     runner = ZooCalrissianRunner(
         cwl=cwl,
-        zoo=zoo,
         conf=conf,
         inputs=inputs,
         outputs=outputs,
