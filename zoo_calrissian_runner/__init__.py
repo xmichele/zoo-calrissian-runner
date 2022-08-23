@@ -107,7 +107,7 @@ class ZooOutputs:
         return params
 
     def set_output(self, value):
-
+        """set the output result value"""
         if "Result" in self.outputs.keys():
             self.outputs["Result"]["value"] = value
         else:
@@ -119,10 +119,10 @@ class ZooCalrissianRunner:
         self, cwl, conf, inputs, outputs, execution_handler: Union[ExecutionHandler, None] = None
     ):
 
-        self.conf = ZooConf(conf)
+        self.zoo_conf = ZooConf(conf)
         self.inputs = ZooInputs(inputs)
         self.outputs = ZooOutputs(outputs)
-        self.cwl = Workflow(cwl, self.conf.workflow_id)
+        self.cwl = Workflow(cwl, self.zoo_conf.workflow_id)
 
         self.handler = execution_handler
 
@@ -132,7 +132,7 @@ class ZooCalrissianRunner:
 
     @staticmethod
     def shorten_namespace(value: str) -> str:
-
+        """shortens the namespace to 63 characters"""
         while len(value) > 63:
             value = value[:-1]
             while value.endswith("-"):
@@ -140,34 +140,40 @@ class ZooCalrissianRunner:
         return value
 
     def get_volume_size(self) -> str:
+        """returns volume size that the pods share"""
         # TODO how to determine the "right" volume size
-        return "10G"
+        return os.environ.get("DEFAULT_VOLUME_SIZE", "10G")
 
     def get_max_cores(self) -> int:
+        """returns the maximum number of cores that pods can use"""
         # TODO how many cores for the CWL execution?
-        return 2
+        return os.environ.get("MAX_CORES", int("2"))
 
     def get_max_ram(self) -> str:
-        # TODO how much cores for the CWL execution?
-        return "4G"
+        """returns the maximum RAM that pods can use"""
+        # TODO how much RAM for the CWL execution?
+        return os.environ.get("MAX_RAM", "4G")
 
     def get_namespace_name(self):
-
+        """creates or returns the namespace"""
         if self._namespace_name is None:
             return self.shorten_namespace(
-                f"{self.conf.workflow_id}-"
+                f"{self.zoo_conf.workflow_id}-"
                 f"{str(datetime.now().timestamp()).replace('.', '')}-{uuid.uuid4()}"
             )
         else:
             return self._namespace_name
 
-    def update_status(self, progress):
+    def update_status(self, progress: int, message: str = None) -> None:
+        """updates the exection progress (%) and provides an optional message"""
+        if message:
+            self.zoo_conf.conf["lenv"]["message"] = message
 
-        zoo.update_status(self.conf, progress)
+        zoo.update_status(self.zoo_conf.conf, progress)
 
     def get_workflow_id(self):
-
-        return self.conf.workflow_id
+        """returns the workflow id (CWL entry point)"""
+        return self.zoo_conf.workflow_id
 
     def get_processing_parameters(self):
         """Gets the processing parameters from the zoo inputs"""
@@ -178,7 +184,7 @@ class ZooCalrissianRunner:
         return self.cwl.get_workflow_inputs(mandatory=mandatory)
 
     def assert_parameters(self):
-        # checks all mandatory processing parameters were sent
+        """checks all mandatory processing parameters were provided"""
         return all(
             elem in list(self.get_processing_parameters().keys())
             for elem in self.get_workflow_inputs(mandatory=True)
@@ -191,11 +197,11 @@ class ZooCalrissianRunner:
             return zoo.SERVICE_FAILED
 
         logger.info("execution started")
-        self.update_status(2)
+        self.update_status(progress=2, message="starting execution")
 
         logger.info("wrap CWL workfow with stage-in/out steps")
         wrapped_worflow = self.wrap()
-        self.update_status(5)
+        self.update_status(progress=5, message="workflow wrapped, creating processing environment")
 
         logger.info("create kubernetes namespace for Calrissian execution")
 
@@ -215,7 +221,7 @@ class ZooCalrissianRunner:
             image_pull_secrets=secret_config,
         )
         session.initialise()
-        self.update_status(10)
+        self.update_status(progress=10, message="processing environment created, preparing execution")
 
         processing_parameters = {
             "process": namespace,
@@ -239,7 +245,7 @@ class ZooCalrissianRunner:
             no_read_only=True,
         )
 
-        self.update_status(18)
+        self.update_status(progress=18, message="execution submitted")
 
         logger.info("execution")
         execution = CalrissianExecution(job=job, runtime_context=session)
@@ -255,7 +261,7 @@ class ZooCalrissianRunner:
         else:
             exit_value = zoo.SERVICE_FAILED
 
-        self.update_status(90)
+        self.update_status(progress=90, message="delivering outputs, logs and usage report")
 
         logger.info("handle outputs execution logs")
         output = execution.get_output()
@@ -267,12 +273,17 @@ class ZooCalrissianRunner:
             usage_report=execution.get_usage_report(),
         )
 
-        self.update_status(97)
+        self.update_status(progress=97, message="clean-up processing resources")
 
         logger.info("clean-up kubernetes resources")
-        # session.dispose()
+        session.dispose()
 
-        self.update_status(100)
+        self.update_status(
+            progress=100,
+            message="processing done, execution {}".format(
+                "failed" if exit_value == zoo.SERVICE_FAILED else "successful"
+            ),
+        )
 
         return exit_value
 
