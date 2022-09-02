@@ -1,5 +1,6 @@
 import os
 import uuid
+from ast import literal_eval
 from datetime import datetime
 from typing import Union
 
@@ -76,7 +77,11 @@ class ZooInputs:
     def get_input_value(self, key):
 
         try:
-            return self.inputs[key]["value"]
+            if "isArray" in self.inputs[key] and self.inputs[key]["isArray"] == "true":
+                return literal_eval(self.inputs[key]["value"])
+            else:
+                return self.inputs[key]["value"]
+
         except KeyError as exc:
             raise exc
         except TypeError:
@@ -87,7 +92,10 @@ class ZooInputs:
         params = {}
 
         for key, value in self.inputs.items():
-            params[key] = value["value"]
+            if "isArray" in value and value["isArray"] == "true":
+                params[key] = literal_eval(value["value"])
+            else:
+                params[key] = value["value"]
 
         return params
 
