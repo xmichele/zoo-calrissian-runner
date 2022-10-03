@@ -12,7 +12,7 @@ dependencies:
   - pylint
   - nose2
   - cwl-wrapper >= 0.10.0
-  - pycalrissian
+  - pycalrissian >= 0.4.0
   - pip
   - pip:
     - kubernetes

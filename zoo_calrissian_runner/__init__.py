@@ -165,7 +165,7 @@ class ZooCalrissianRunner:
             return self._namespace_name
 
     def update_status(self, progress: int, message: str = None) -> None:
-        """updates the exection progress (%) and provides an optional message"""
+        """updates the execution progress (%) and provides an optional message"""
         if message:
             self.zoo_conf.conf["lenv"]["message"] = message
 
@@ -180,7 +180,7 @@ class ZooCalrissianRunner:
         return self.inputs.get_processing_parameters()
 
     def get_workflow_inputs(self, mandatory=False):
-        """Returns the CWL worflow inputs"""
+        """Returns the CWL workflow inputs"""
         return self.cwl.get_workflow_inputs(mandatory=mandatory)
 
     def assert_parameters(self):
@@ -199,8 +199,8 @@ class ZooCalrissianRunner:
         logger.info("execution started")
         self.update_status(progress=2, message="starting execution")
 
-        logger.info("wrap CWL workfow with stage-in/out steps")
-        wrapped_worflow = self.wrap()
+        logger.info("wrap CWL workflow with stage-in/out steps")
+        wrapped_workflow = self.wrap()
         self.update_status(progress=5, message="workflow wrapped, creating processing environment")
 
         logger.info("create kubernetes namespace for Calrissian execution")
@@ -233,7 +233,7 @@ class ZooCalrissianRunner:
 
         logger.info("create Calrissian job")
         job = CalrissianJob(
-            cwl=wrapped_worflow,
+            cwl=wrapped_workflow,
             params=processing_parameters,
             runtime_context=session,
             cwl_entry_point="main",
