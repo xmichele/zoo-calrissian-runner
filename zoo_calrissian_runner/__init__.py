@@ -34,7 +34,7 @@ class Workflow:
     def __init__(self, cwl, workflow_id):
 
         self.raw_cwl = cwl
-        self.cwl = load_document_by_yaml(cwl, "io://")
+        self.cwl = load_document_by_yaml(yaml=cwl, uri="io://", id_= workflow_id)
         self.workflow_id = workflow_id
 
     def get_workflow(self):
@@ -46,7 +46,7 @@ class Workflow:
     def get_workflow_inputs(self, mandatory=False):
 
         inputs = []
-        for inp in self.get_workflow().inputs:
+        for inp in self.cwl.inputs:
             if mandatory:
                 if inp.default is not None:
                     continue
