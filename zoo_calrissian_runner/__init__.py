@@ -35,7 +35,7 @@ class Workflow:
     def __init__(self, cwl, workflow_id):
 
         self.raw_cwl = cwl
-        self.cwl = load_document_by_yaml(yaml=cwl, uri="io://", id_= workflow_id)
+        self.cwl = load_document_by_yaml(cwl, "io://")
         self.workflow_id = workflow_id
 
     def get_workflow(self):
@@ -47,7 +47,7 @@ class Workflow:
     def get_workflow_inputs(self, mandatory=False):
 
         inputs = []
-        for inp in self.cwl.inputs:
+        for inp in self.get_workflow().inputs:
             if mandatory:
                 if inp.default is not None:
                     continue
@@ -77,11 +77,7 @@ class ZooInputs:
     def get_input_value(self, key):
 
         try:
-            if "isArray" in self.inputs[key] and self.inputs[key]["isArray"] == "true":
-                return literal_eval(self.inputs[key]["value"])
-            else:
-                return self.inputs[key]["value"]
-
+            return self.inputs[key]["value"]
         except KeyError as exc:
             raise exc
         except TypeError:
@@ -92,10 +88,7 @@ class ZooInputs:
         params = {}
 
         for key, value in self.inputs.items():
-            if "isArray" in value and value["isArray"] == "true":
-                params[key] = literal_eval(value["value"])
-            else:
-                params[key] = value["value"]
+            params[key] = value["value"]
 
         return params
 
