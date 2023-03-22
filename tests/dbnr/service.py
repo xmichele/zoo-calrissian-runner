@@ -34,7 +34,6 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
         return None
 
     def get_secrets(self):
-
         username = os.getenv("CR_USERNAME", None)
         password = os.getenv("CR_TOKEN", None)
         registry = os.getenv("CR_ENDPOINT", None)
@@ -53,7 +52,6 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
         return secret_config
 
     def get_additional_parameters(self):
-
         return {
             "ADES_STAGEOUT_AWS_SERVICEURL": os.getenv("AWS_SERVICE_URL", None),
             "ADES_STAGEOUT_AWS_REGION": os.getenv("AWS_REGION", None),
@@ -66,7 +64,8 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
             "ADES_STAGEOUT_OUTPUT": "s3://eoepca-ades",
         }
 
-    def handle_outputs(self, log, output, usage_report):
+    def handle_outputs(self, log, output, usage_report, tool_logs):
+        print(tool_logs)
 
         os.makedirs(
             os.path.join(self.conf["tmpPath"], self.job_id),
@@ -95,9 +94,19 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
         with open(os.path.join(self.conf["tmpPath"], self.job_id, "report.json"), "w") as report_file:
             json.dump(aggregated_outputs, report_file, indent=4)
 
+        self.conf["service_logs"] = [
+            {
+                "url": f"https://someurl.com/{os.path.basename(tool_log)}",
+                "title": f"Tool log {os.path.basename(tool_log)}",
+                "rel": "related",
+            }
+            for tool_log in tool_logs
+        ]
+
+        print(self.conf)
+
 
 def dnbr(conf, inputs, outputs):
-
     with open(
         os.path.join(
             pathlib.Path(os.path.realpath(__file__)).parent.absolute(),
@@ -117,7 +126,6 @@ def dnbr(conf, inputs, outputs):
     exit_status = runner.execute()
 
     if exit_status == zoo.SERVICE_SUCCEEDED:
-
         outputs = runner.outputs
         return zoo.SERVICE_SUCCEEDED
 

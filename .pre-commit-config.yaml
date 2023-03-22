@@ -35,13 +35,13 @@ repos:
         args:
           - --line-length=105
           - .
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
-    hooks:
-      - id: isort
-        args:
-          - --line-length=105
-          - --src=zoo_calrissian_runner
+  # - repo: https://github.com/PyCQA/isort
+  #   rev: 5.10.1
+  #   hooks:
+  #     - id: isort
+  #       args:
+  #         - --line-length=105
+  #         - --src=zoo_calrissian_runner
   # - repo: local
   #   hooks:
   #   -   id: pylint

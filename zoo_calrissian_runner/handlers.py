@@ -22,7 +22,7 @@ class ExecutionHandler(ABC):
         pass
 
     @abstractmethod
-    def handle_outputs(self, execution_log, output, usage_report):
+    def handle_outputs(self, execution_log, output, usage_report, tool_logs=None):
         pass
 
     @abstractmethod

@@ -1,6 +1,5 @@
 import os
 import uuid
-from ast import literal_eval
 from datetime import datetime
 from typing import Union
 
@@ -127,7 +126,7 @@ class ZooCalrissianRunner:
 
         self.handler = execution_handler
 
-        self.storage_class = os.environ.get("STORAGE_CLASS", "longhorn")
+        self.storage_class = os.environ.get("STORAGE_CLASS", "openebs-nfs-test")
         self.monitor_interval = 30
         self._namespace_name = None
 
@@ -244,6 +243,7 @@ class ZooCalrissianRunner:
             pod_node_selector=self.handler.get_pod_node_selector(),
             debug=True,
             no_read_only=True,
+            tool_logs=True,
         )
 
         self.update_status(progress=18, message="execution submitted")
@@ -272,6 +272,7 @@ class ZooCalrissianRunner:
             log=execution.get_log(),
             output=output,
             usage_report=execution.get_usage_report(),
+            tool_logs=execution.get_tool_logs(),
         )
 
         self.update_status(progress=97, message="clean-up processing resources")

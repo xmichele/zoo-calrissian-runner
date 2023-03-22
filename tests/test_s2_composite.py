@@ -48,7 +48,6 @@ class TestSentinel2Composites(unittest.TestCase):
             cls.cwl = cwl
 
     def test_execution(self):
-
         os.environ["KUBECONFIG"] = "/home/mambauser/.kube/kubeconfig-t2-dev.yaml"
 
         class CalrissianRunnerExecutionHandler(ExecutionHandler):
@@ -60,7 +59,6 @@ class TestSentinel2Composites(unittest.TestCase):
                 return None
 
             def get_secrets(self):
-
                 username = ""
                 password = ""
                 email = ""
@@ -101,7 +99,6 @@ class TestSentinel2Composites(unittest.TestCase):
                 }
 
             def handle_outputs(self, log, output, usage_report):
-
                 os.makedirs(
                     os.path.join(self.conf["tmpPath"], self.job_id),
                     mode=0o777,
@@ -147,7 +144,6 @@ class TestSentinel2Composites(unittest.TestCase):
 
         runner = ZooCalrissianRunner(
             cwl=self.cwl,
-            zoo=self.zoo,
             conf=self.conf,
             inputs=inputs,
             outputs=outputs,

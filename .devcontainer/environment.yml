@@ -12,10 +12,10 @@ dependencies:
   - pylint
   - nose2
   - cwl-wrapper >= 0.10.0
-  - pycalrissian >= 0.4.0
+  - pycalrissian >= 0.6.0
   - pip
   - pip:
     - kubernetes
     - pdocs
-    - cwl-utils
+    - cwl-utils==0.12
   - loguru
