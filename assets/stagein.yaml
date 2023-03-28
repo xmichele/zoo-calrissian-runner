@@ -5,6 +5,10 @@ class: CommandLineTool
 hints:
   DockerRequirement:
     dockerPull: terradue/stars:2.3.1
+  "cwltool:Secrets":
+    secrets:
+    - ADES_STAGEIN_AWS_ACCESS_KEY_ID
+    - ADES_STAGEIN_AWS_SECRET_ACCESS_KEY
 id: stars
 arguments:
 - copy
@@ -29,22 +33,18 @@ inputs:
   ADES_STAGEIN_AWS_SECRET_ACCESS_KEY:
     type: string?
 outputs: {}
+baseCommand: ['/bin/bash', 'stagein.sh']
 requirements:
+  InitialWorkDirRequirement:
+    listing:
+    - entryname: stagein.sh
+      entry: |-
+        #!/bin/bash
+        export AWS__ServiceURL=$(inputs.ADES_STAGEIN_AWS_SERVICEURL)
+        export AWS_ACCESS_KEY_ID=$(inputs.ADES_STAGEIN_AWS_ACCESS_KEY_ID)
+        export AWS_SECRET_ACCESS_KEY=$(inputs.ADES_STAGEIN_AWS_SECRET_ACCESS_KEY)
+        Stars copy $@
   EnvVarRequirement:
     envDef:
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      # AWS__Profile: $(inputs.aws_profile)
-      # AWS__ProfilesLocation: $(inputs.aws_profiles_location.path)
-      AWS__ServiceURL: $(inputs.ADES_STAGEIN_AWS_SERVICEURL)
-      AWS__Region: $(inputs.ADES_STAGEIN_AWS_REGION)
-      AWS__AuthenticationRegion: $(inputs.ADES_STAGEIN_AWS_REGION)
-      AWS_ACCESS_KEY_ID: $(inputs.ADES_STAGEIN_AWS_ACCESS_KEY_ID)
-      AWS_SECRET_ACCESS_KEY: $(inputs.ADES_STAGEIN_AWS_SECRET_ACCESS_KEY)
-      "Credentials__StacCatalog__AuthType" : "Basic"
-      "Credentials__StacCatalog__UriPrefix" : "https://supervisor.{{ .Values.global.ingress.hostDomain }}"
-      "Credentials__StacCatalog__Username" : "stars"
-      "Credentials__StacCatalog__Password" : "89126578214hr87fh8g2389"
-      # STARS_URL_FIND: "https?://supervisor.charter.uat.esaportal.eu/catalog"
-      # STARS_URL_REPLACE: "http://acceptance-supervisor-catalog-stac.cpe/catalog"
   ResourceRequirement: {}
-  InlineJavascriptRequirement: {}

@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime
 from typing import Union
-
+import cwl_utils
 from cwl_utils.parser import load_document_by_yaml
 from cwl_wrapper.parser import Parser
 from loguru import logger
@@ -11,6 +11,23 @@ from pycalrissian.execution import CalrissianExecution
 from pycalrissian.job import CalrissianJob
 
 from zoo_calrissian_runner.handlers import ExecutionHandler
+import attr
+
+import inspect
+
+
+# usefull class for hints in CWL
+@attr.s
+class ResourceRequirement:
+    coresMin = attr.ib(default=None)
+    coresMax = attr.ib(default=None)
+    ramMin = attr.ib(default=None)
+    ramMax = attr.ib(default=None)
+
+    @classmethod
+    def from_dict(cls, env):
+        return cls(**{k: v for k, v in env.items() if k in inspect.signature(cls).parameters})
+
 
 try:
     import zoo
@@ -32,49 +49,128 @@ except ImportError:
 
 class Workflow:
     def __init__(self, cwl, workflow_id):
-
         self.raw_cwl = cwl
         self.cwl = load_document_by_yaml(cwl, "io://")
         self.workflow_id = workflow_id
 
-    def get_workflow(self):
-
+    def get_workflow(self) -> cwl_utils.parser.cwl_v1_0.Workflow:
+        # returns a cwl_utils.parser.cwl_v1_0.Workflow)
         ids = [elem.id.split("#")[-1] for elem in self.cwl]
 
         return self.cwl[ids.index(self.workflow_id)]
 
-    def get_workflow_inputs(self, mandatory=False):
+    def get_object_by_id(self, id):
+        ids = [elem.id.split("#")[-1] for elem in self.cwl]
+        return self.cwl[ids.index(id)]
 
+    def get_workflow_inputs(self, mandatory=False):
         inputs = []
         for inp in self.get_workflow().inputs:
             if mandatory:
-                if inp.default is not None:
+                if inp.default is not None or inp.type == ["null", "string"]:
                     continue
-
-                # test optional array of string
-                elif inp.type != ["null", "string"]:
-                    inputs.append(inp.id.split("/")[-1])
                 else:
-                    continue
+                    inputs.append(inp.id.split("/")[-1])
             else:
                 inputs.append(inp.id.split("/")[-1])
         return inputs
 
+    @staticmethod
+    def has_scatter_requirement(workflow):
+        return any(
+            isinstance(
+                requirement,
+                (
+                    cwl_utils.parser.cwl_v1_0.ScatterFeatureRequirement,
+                    cwl_utils.parser.cwl_v1_1.ScatterFeatureRequirement,
+                    cwl_utils.parser.cwl_v1_2.ScatterFeatureRequirement,
+                ),
+            )
+            for requirement in workflow.requirements
+        )
+
+    @staticmethod
+    def get_resource_requirement(elem):
+        """Gets the ResourceRequirement out of a CommandLineTool or Workflow
+
+        Args:
+            elem (CommandLineTool or Workflow): CommandLineTool or Workflow
+
+        Returns:
+            cwl_utils.parser.cwl_v1_2.ResourceRequirement or ResourceRequirement
+        """
+        resource_requirement = [
+            requirement
+            for requirement in elem.requirements
+            if isinstance(
+                requirement,
+                (
+                    cwl_utils.parser.cwl_v1_0.ResourceRequirement,
+                    cwl_utils.parser.cwl_v1_1.ResourceRequirement,
+                    cwl_utils.parser.cwl_v1_2.ResourceRequirement,
+                ),
+            )
+        ]
+
+        if len(resource_requirement) == 1:
+            return resource_requirement[0]
+
+        # look for hints
+        if elem.hints is not None:
+            resource_requirement = [
+                ResourceRequirement.from_dict(hint)
+                for hint in elem.hints
+                if hint["class"] == "ResourceRequirement"
+            ]
+
+        if len(resource_requirement) == 1:
+            return resource_requirement[0]
+
+    def eval_resource(self):
+        resources = {"coresMin": [], "coresMax": [], "ramMin": [], "ramMax": []}
+
+        for elem in self.cwl:
+            if isinstance(
+                elem,
+                (
+                    cwl_utils.parser.cwl_v1_0.Workflow,
+                    cwl_utils.parser.cwl_v1_1.Workflow,
+                    cwl_utils.parser.cwl_v1_2.Workflow,
+                ),
+            ):
+                if resource_requirement := self.get_resource_requirement(elem):
+                    for resource_type in ["coresMin", "coresMax", "ramMin", "ramMax"]:
+                        if getattr(resource_requirement, resource_type):
+                            resources[resource_type].append(getattr(resource_requirement, resource_type))
+                for step in elem.steps:
+                    if resource_requirement := self.get_resource_requirement(
+                        self.get_object_by_id(step.run[1:])
+                    ):
+                        multiplier = 2 if step.scatter else 1
+                        for resource_type in [
+                            "coresMin",
+                            "coresMax",
+                            "ramMin",
+                            "ramMax",
+                        ]:
+                            if getattr(resource_requirement, resource_type):
+                                resources[resource_type].append(
+                                    getattr(resource_requirement, resource_type) * multiplier
+                                )
+        return resources
+
 
 class ZooConf:
     def __init__(self, conf):
-
         self.conf = conf
         self.workflow_id = self.conf["lenv"]["workflow_id"]
 
 
 class ZooInputs:
     def __init__(self, inputs):
-
         self.inputs = inputs
 
     def get_input_value(self, key):
-
         try:
             return self.inputs[key]["value"]
         except KeyError as exc:
@@ -84,27 +180,16 @@ class ZooInputs:
 
     def get_processing_parameters(self):
         """Returns a list with the input parameters keys"""
-        params = {}
-
-        for key, value in self.inputs.items():
-            params[key] = value["value"]
-
-        return params
+        return {key: value["value"] for key, value in self.inputs.items()}
 
 
 class ZooOutputs:
     def __init__(self, outputs):
-
         self.outputs = outputs
 
     def get_output_parameters(self):
         """Returns a list with the output parameters keys"""
-        params = {}
-
-        for key, value in self.outputs.items():
-            params[key] = value["value"]
-
-        return params
+        return {key: value["value"] for key, value in self.outputs.items()}
 
     def set_output(self, value):
         """set the output result value"""
@@ -116,9 +201,13 @@ class ZooOutputs:
 
 class ZooCalrissianRunner:
     def __init__(
-        self, cwl, conf, inputs, outputs, execution_handler: Union[ExecutionHandler, None] = None
+        self,
+        cwl,
+        conf,
+        inputs,
+        outputs,
+        execution_handler: Union[ExecutionHandler, None] = None,
     ):
-
         self.zoo_conf = ZooConf(conf)
         self.inputs = ZooInputs(inputs)
         self.outputs = ZooOutputs(outputs)
@@ -146,13 +235,21 @@ class ZooCalrissianRunner:
 
     def get_max_cores(self) -> int:
         """returns the maximum number of cores that pods can use"""
-        # TODO how many cores for the CWL execution?
-        return os.environ.get("MAX_CORES", int("2"))
+        resources = self.cwl.eval_resource()
+
+        max_cores = max(max(resources["coresMin"] or [0]), max(resources["coresMax"] or [0]))
+        logger.info(f"max cores: {max_cores}")
+
+        return max_cores
 
     def get_max_ram(self) -> str:
         """returns the maximum RAM that pods can use"""
-        # TODO how much RAM for the CWL execution?
-        return os.environ.get("MAX_RAM", "4G")
+        resources = self.cwl.eval_resource()
+        max_ram = max(max(resources["ramMin"] or [0]), max(resources["ramMax"] or [0]))
+
+        logger.info(f"max RAM: {max_ram}")
+
+        return f"{max_ram}Mi"
 
     def get_namespace_name(self):
         """creates or returns the namespace"""
@@ -191,7 +288,6 @@ class ZooCalrissianRunner:
         )
 
     def execute(self):
-
         if not (self.assert_parameters()):
             logger.error("Mandatory parameters missing")
             return zoo.SERVICE_FAILED
@@ -278,19 +374,16 @@ class ZooCalrissianRunner:
         self.update_status(progress=97, message="clean-up processing resources")
 
         logger.info("clean-up kubernetes resources")
-        session.dispose()
+        # session.dispose()
 
         self.update_status(
             progress=100,
-            message="processing done, execution {}".format(
-                "failed" if exit_value == zoo.SERVICE_FAILED else "successful"
-            ),
+            message=f'execution {"failed" if exit_value == zoo.SERVICE_FAILED else "successful"}',
         )
 
         return exit_value
 
     def wrap(self):
-
         workflow_id = self.get_workflow_id()
 
         wf = Parser(
