@@ -1,24 +1,17 @@
-import os
 import unittest
 
 from .dnbr.service import dnbr
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class TestSentinel2DNBRService(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        os.environ["CR_USERNAME"] = "fabricebrito"
-        os.environ["CR_TOKEN"] = "dckr_pat_cVqA0dOTLkQi6XxDklSPpH91Qic"
-        os.environ["CR_ENDPOINT"] = "https://index.docker.io/v1/"
 
-        os.environ["AWS_SERVICE_URL"] = "https://s3.fr-par.scw.cloud"
-        os.environ["AWS_REGION"] = "fr-par"
-        os.environ["AWS_ACCESS_KEY_ID"] = "SCWEZ2E06RTJ8KAKCKBY"
-        os.environ["AWS_SECRET_ACCESS_KEY"] = "e13bf6e0-6278-4a96-a9d7-2a40575211cd"
-
-        os.environ["KUBECONFIG"] = "/home/mambauser/.kube/kubeconfig-t2-dev.yaml"
-
-        os.environ["STORAGE_CLASS"] = "openebs-kernel-nfs-scw"
+        load_dotenv()
 
         class ZooStub(object):
             def __init__(self):

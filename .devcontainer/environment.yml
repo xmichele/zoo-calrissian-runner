@@ -19,4 +19,5 @@ dependencies:
     - pdocs
     - cwl-utils==0.12
     - attrs
+    - python-dotenv
   - loguru
