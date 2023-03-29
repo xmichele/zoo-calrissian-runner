@@ -43,7 +43,7 @@ requirements:
         export AWS__ServiceURL=$(inputs.ADES_STAGEIN_AWS_SERVICEURL)
         export AWS_ACCESS_KEY_ID=$(inputs.ADES_STAGEIN_AWS_ACCESS_KEY_ID)
         export AWS_SECRET_ACCESS_KEY=$(inputs.ADES_STAGEIN_AWS_SECRET_ACCESS_KEY)
-        Stars copy $@
+        Stars $@
   EnvVarRequirement:
     envDef:
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
