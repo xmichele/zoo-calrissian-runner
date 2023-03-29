@@ -3,6 +3,9 @@ import os
 import yaml
 from zoo_calrissian_runner import Workflow
 import cwl_utils
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class TestWorkflow(unittest.TestCase):
@@ -45,28 +48,60 @@ class TestWorkflow(unittest.TestCase):
     def test_workflow_hints(self):
         workflow = Workflow(cwl=self.reference_wf4["cwl"], workflow_id=self.reference_wf4["workflow_id"])
 
-        self.assertEqual(
-            {"coresMin": [3], "coresMax": [], "ramMin": [10240], "ramMax": []},
+        self.assertDictEqual(
+            {
+                "coresMin": [3],
+                "coresMax": [],
+                "ramMin": [10240],
+                "ramMax": [],
+                "outdirMin": [10000],
+                "outdirMax": [],
+                "tmpdirMax": [],
+                "tmpdirMin": [10000],
+            },
             workflow.eval_resource(),
         )
 
     def test_workflow_requirements(self):
         workflow = Workflow(cwl=self.reference_wf2["cwl"], workflow_id=self.reference_wf2["workflow_id"])
 
-        self.assertEqual(
-            {"coresMin": [3], "coresMax": [], "ramMin": [10240], "ramMax": []},
+        self.assertDictEqual(
+            {
+                "coresMin": [3],
+                "coresMax": [],
+                "ramMin": [10240],
+                "ramMax": [],
+                "outdirMin": [],
+                "outdirMax": [],
+                "tmpdirMax": [],
+                "tmpdirMin": [],
+            },
             workflow.eval_resource(),
         )
 
     def test_clt_requirements(self):
         workflow = Workflow(cwl=self.reference_wf3["cwl"], workflow_id=self.reference_wf3["workflow_id"])
 
-        self.assertEqual(
+        self.assertDictEqual(
             {
                 "coresMin": [3, 3, 6, 3, 3, 3, 3, 6, 6],
                 "coresMax": [],
-                "ramMin": [10240, 10240, 20480, 10240, 10240, 10240, 10240, 20480, 20480],
+                "ramMin": [
+                    10240,
+                    10240,
+                    20480,
+                    10240,
+                    10240,
+                    10240,
+                    10240,
+                    20480,
+                    20480,
+                ],
                 "ramMax": [],
+                "outdirMin": [],
+                "outdirMax": [],
+                "tmpdirMax": [],
+                "tmpdirMin": [],
             },
             workflow.eval_resource(),
         )
@@ -86,3 +121,24 @@ class TestWorkflow(unittest.TestCase):
         max_cores = max(max(resources["coresMin"] or [0]), max(resources["coresMax"] or [0]))
 
         self.assertEqual(max_cores, 6)
+
+    def test_volume_size(self):
+        workflow = Workflow(cwl=self.reference_wf4["cwl"], workflow_id=self.reference_wf4["workflow_id"])
+
+        resources = workflow.eval_resource()
+        volume_size = max(max(resources["tmpdirMin"] or [0]), max(resources["tmpdirMax"] or [0])) + max(
+            max(resources["outdirMin"] or [0]), max(resources["outdirMax"] or [0])
+        )
+
+        self.assertEqual(volume_size, 20000)
+
+    def test_default_resources(self):
+        workflow = Workflow(cwl=self.reference_wf1["cwl"], workflow_id=self.reference_wf1["workflow_id"])
+
+        resources = workflow.eval_resource()
+        max_cores = max(max(resources["coresMin"] or [0]), max(resources["coresMax"] or [0]))
+
+        if max_cores == 0:
+            max_cores = int(os.environ.get("DEFAULT_MAX_CORES"))
+
+        self.assertEqual(max_cores, int(os.environ["DEFAULT_MAX_CORES"]))

@@ -16,13 +16,17 @@ import attr
 import inspect
 
 
-# usefull class for hints in CWL
+# useful class for hints in CWL
 @attr.s
 class ResourceRequirement:
     coresMin = attr.ib(default=None)
     coresMax = attr.ib(default=None)
     ramMin = attr.ib(default=None)
     ramMax = attr.ib(default=None)
+    tmpdirMin = attr.ib(default=None)
+    tmpdirMax = attr.ib(default=None)
+    outdirMin = attr.ib(default=None)
+    outdirMax = attr.ib(default=None)
 
     @classmethod
     def from_dict(cls, env):
@@ -127,7 +131,16 @@ class Workflow:
             return resource_requirement[0]
 
     def eval_resource(self):
-        resources = {"coresMin": [], "coresMax": [], "ramMin": [], "ramMax": []}
+        resources = {
+            "coresMin": [],
+            "coresMax": [],
+            "ramMin": [],
+            "ramMax": [],
+            "tmpdirMin": [],
+            "tmpdirMax": [],
+            "outdirMin": [],
+            "outdirMax": [],
+        }
 
         for elem in self.cwl:
             if isinstance(
@@ -139,7 +152,16 @@ class Workflow:
                 ),
             ):
                 if resource_requirement := self.get_resource_requirement(elem):
-                    for resource_type in ["coresMin", "coresMax", "ramMin", "ramMax"]:
+                    for resource_type in [
+                        "coresMin",
+                        "coresMax",
+                        "ramMin",
+                        "ramMax",
+                        "tmpdirMin",
+                        "tmpdirMax",
+                        "outdirMin",
+                        "outdirMax",
+                    ]:
                         if getattr(resource_requirement, resource_type):
                             resources[resource_type].append(getattr(resource_requirement, resource_type))
                 for step in elem.steps:
@@ -152,6 +174,10 @@ class Workflow:
                             "coresMax",
                             "ramMin",
                             "ramMax",
+                            "tmpdirMin",
+                            "tmpdirMax",
+                            "outdirMin",
+                            "outdirMax",
                         ]:
                             if getattr(resource_requirement, resource_type):
                                 resources[resource_type].append(
@@ -230,14 +256,27 @@ class ZooCalrissianRunner:
 
     def get_volume_size(self) -> str:
         """returns volume size that the pods share"""
+
+        resources = self.cwl.eval_resource()
+
         # TODO how to determine the "right" volume size
-        return os.environ.get("DEFAULT_VOLUME_SIZE", "10G")
+        volume_size = max(max(resources["tmpdirMin"] or [0]), max(resources["tmpdirMax"] or [0])) + max(
+            max(resources["outdirMin"] or [0]), max(resources["outdirMax"] or [0])
+        )
+
+        if volume_size == 0:
+            volume_size = os.environ.get("DEFAULT_VOLUME_SIZE")
+
+        return f"{volume_size}Mi"
 
     def get_max_cores(self) -> int:
         """returns the maximum number of cores that pods can use"""
         resources = self.cwl.eval_resource()
 
         max_cores = max(max(resources["coresMin"] or [0]), max(resources["coresMax"] or [0]))
+
+        if max_cores == 0:
+            max_cores = int(os.environ.get("DEFAULT_MAX_CORES"))
         logger.info(f"max cores: {max_cores}")
 
         return max_cores
@@ -247,7 +286,9 @@ class ZooCalrissianRunner:
         resources = self.cwl.eval_resource()
         max_ram = max(max(resources["ramMin"] or [0]), max(resources["ramMax"] or [0]))
 
-        logger.info(f"max RAM: {max_ram}")
+        if max_ram == 0:
+            max_ram = int(os.environ.get("DEFAULT_MAX_RAM"))
+        logger.info(f"max RAM: {max_ram}Mi")
 
         return f"{max_ram}Mi"
 

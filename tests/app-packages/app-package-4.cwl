@@ -11,6 +11,8 @@ $graph:
       ResourceRequirement:
         ramMin: 10240
         coresMin: 3
+        tmpdirMin: 10000
+        outdirMin: 10000
     inputs:
       pre_stac_item:
         doc: Pre-event Sentinel-2 item
