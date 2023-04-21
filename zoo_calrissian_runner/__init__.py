@@ -33,19 +33,16 @@ except ImportError:
 
 class Workflow:
     def __init__(self, cwl, workflow_id):
-
         self.raw_cwl = cwl
-        self.cwl = load_document_by_yaml(cwl, "io://")
+        self.cwl = load_document_by_yaml(cwl, "io://", id_=workflow_id)
         self.workflow_id = workflow_id
 
     def get_workflow(self):
-
         ids = [elem.id.split("#")[-1] for elem in self.cwl]
 
         return self.cwl[ids.index(self.workflow_id)]
 
     def get_workflow_inputs(self, mandatory=False):
-
         inputs = []
         for inp in self.get_workflow().inputs:
             if mandatory:
@@ -64,18 +61,15 @@ class Workflow:
 
 class ZooConf:
     def __init__(self, conf):
-
         self.conf = conf
-        self.workflow_id = self.conf["lenv"]["workflow_id"]
+        self.workflow_id = self.conf["lenv"]["Identifier"]
 
 
 class ZooInputs:
     def __init__(self, inputs):
-
         self.inputs = inputs
 
     def get_input_value(self, key):
-
         try:
             if "isArray" in self.inputs[key] and self.inputs[key]["isArray"] == "true":
                 return literal_eval(self.inputs[key]["value"])
@@ -102,7 +96,6 @@ class ZooInputs:
 
 class ZooOutputs:
     def __init__(self, outputs):
-
         self.outputs = outputs
 
     def get_output_parameters(self):
@@ -126,7 +119,6 @@ class ZooCalrissianRunner:
     def __init__(
         self, cwl, conf, inputs, outputs, execution_handler: Union[ExecutionHandler, None] = None
     ):
-
         self.zoo_conf = ZooConf(conf)
         self.inputs = ZooInputs(inputs)
         self.outputs = ZooOutputs(outputs)
@@ -199,7 +191,6 @@ class ZooCalrissianRunner:
         )
 
     def execute(self):
-
         if not (self.assert_parameters()):
             logger.error("Mandatory parameters missing")
             return zoo.SERVICE_FAILED
@@ -296,7 +287,6 @@ class ZooCalrissianRunner:
         return exit_value
 
     def wrap(self):
-
         workflow_id = self.get_workflow_id()
 
         wf = Parser(

@@ -48,7 +48,6 @@ class TestSentinel2SExpressions(unittest.TestCase):
             cls.cwl = cwl
 
     def test_execution(self):
-
         os.environ["KUBECONFIG"] = "/home/mambauser/.kube/kubeconfig-t2-dev.yaml"
 
         class CalrissianRunnerExecutionHandler(ExecutionHandler):
@@ -60,7 +59,6 @@ class TestSentinel2SExpressions(unittest.TestCase):
                 return None
 
             def get_secrets(self):
-
                 username = ""
                 password = ""
                 email = ""
@@ -101,7 +99,6 @@ class TestSentinel2SExpressions(unittest.TestCase):
                 }
 
             def handle_outputs(self, log, output, usage_report):
-
                 os.makedirs(
                     os.path.join(self.conf["tmpPath"], self.job_id),
                     mode=0o777,
@@ -159,7 +156,6 @@ class TestSentinel2SExpressions(unittest.TestCase):
         self.assertEqual(exit_value, 3)
 
     def test_missing_parameter_execution(self):
-
         os.environ["KUBECONFIG"] = "/home/mambauser/.kube/kubeconfig-t2-dev.yaml"
 
         class CalrissianRunnerExecutionHandler(ExecutionHandler):
@@ -171,7 +167,6 @@ class TestSentinel2SExpressions(unittest.TestCase):
                 return None
 
             def get_secrets(self):
-
                 username = ""
                 password = ""
                 email = ""
@@ -212,7 +207,6 @@ class TestSentinel2SExpressions(unittest.TestCase):
                 }
 
             def handle_outputs(self, log, output, usage_report):
-
                 os.makedirs(
                     os.path.join(self.conf["tmpPath"], self.job_id),
                     mode=0o777,

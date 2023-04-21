@@ -34,7 +34,6 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
         return None
 
     def get_secrets(self):
-
         username = os.getenv("CR_USERNAME", None)
         password = os.getenv("CR_TOKEN", None)
         registry = os.getenv("CR_ENDPOINT", None)
@@ -53,7 +52,6 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
         return secret_config
 
     def get_additional_parameters(self):
-
         return {
             "ADES_STAGEOUT_AWS_SERVICEURL": os.getenv("AWS_SERVICE_URL", None),
             "ADES_STAGEOUT_AWS_REGION": os.getenv("AWS_REGION", None),
@@ -67,7 +65,6 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
         }
 
     def handle_outputs(self, log, output, usage_report):
-
         os.makedirs(
             os.path.join(self.conf["tmpPath"], self.job_id),
             mode=0o777,
@@ -97,7 +94,6 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
 
 
 def dnbr(conf, inputs, outputs):
-
     with open(
         os.path.join(
             pathlib.Path(os.path.realpath(__file__)).parent.absolute(),
@@ -117,7 +113,6 @@ def dnbr(conf, inputs, outputs):
     exit_status = runner.execute()
 
     if exit_status == zoo.SERVICE_SUCCEEDED:
-
         outputs = runner.outputs
         return zoo.SERVICE_SUCCEEDED
 
