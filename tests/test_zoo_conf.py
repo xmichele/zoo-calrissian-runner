@@ -34,7 +34,7 @@ class TestCalrissianContext(unittest.TestCase):
 
             conf = {}
             conf["lenv"] = {"message": ""}
-            conf["lenv"] = {"workflow_id": "dnbr"}
+            conf["lenv"] = {"Identifier": "dnbr"}
 
             cls.conf = conf
 
