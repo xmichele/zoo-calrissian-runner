@@ -14,6 +14,7 @@
 
 ### Calrissian
 
+* `CALRISSIAN_IMAGE`: Calrissian container image
 * `DEFAULT_VOLUME_SIZE`: default volume size for the RWX volume used by Calrissian. Defaults to `10G`
-* `MAX_CORES`: maximum number of cores used by Calrissian pods. Defaults to `2`
-* `MAX_RAM`: maximum RAM used by Calrissian pods. Defaults to `4G`
+* `DEFAULT_MAX_CORES`: maximum number of cores used by Calrissian pods. Defaults to `2`
+* `DEFAULT_MAX_RAM`: maximum RAM used by Calrissian pods. Defaults to `4G`

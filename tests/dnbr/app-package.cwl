@@ -4,9 +4,12 @@ $graph:
     doc: dNBR - produce the delta normalized difference between NIR and SWIR 22 over a pair of stac items
     id: dnbr
     requirements:
-      - class: ScatterFeatureRequirement
-      - class: SubworkflowFeatureRequirement
-      - class: MultipleInputFeatureRequirement
+      ScatterFeatureRequirement: {}
+      SubworkflowFeatureRequirement: {}
+      MultipleInputFeatureRequirement: {}
+      ResourceRequirement:
+        ramMin: 10240
+        coresMin: 6
     inputs:
       pre_stac_item:
         doc: Pre-event Sentinel-2 item

@@ -40,7 +40,7 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
 
         auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("utf-8")
 
-        secret_config = {
+        return {
             "auths": {
                 registry: {
                     "username": username,
@@ -48,8 +48,6 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
                 },
             }
         }
-
-        return secret_config
 
     def get_additional_parameters(self):
         return {
@@ -64,7 +62,7 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
             "ADES_STAGEOUT_OUTPUT": "s3://eoepca-ades",
         }
 
-    def handle_outputs(self, log, output, usage_report):
+    def handle_outputs(self, log, output, usage_report, tool_logs):
         os.makedirs(
             os.path.join(self.conf["tmpPath"], self.job_id),
             mode=0o777,
@@ -91,6 +89,17 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
 
         with open(os.path.join(self.conf["tmpPath"], self.job_id, "report.json"), "w") as report_file:
             json.dump(aggregated_outputs, report_file, indent=4)
+
+        self.conf["service_logs"] = [
+            {
+                "url": f"https://someurl.com/{os.path.basename(tool_log)}",
+                "title": f"Tool log {os.path.basename(tool_log)}",
+                "rel": "related",
+            }
+            for tool_log in tool_logs
+        ]
+
+        print(self.conf)
 
 
 def dnbr(conf, inputs, outputs):

@@ -48,8 +48,6 @@ class TestSentinel2Composites(unittest.TestCase):
             cls.cwl = cwl
 
     def test_execution(self):
-        os.environ["KUBECONFIG"] = "/home/mambauser/.kube/kubeconfig-t2-dev.yaml"
-
         class CalrissianRunnerExecutionHandler(ExecutionHandler):
             def get_pod_env_vars(self):
                 # sets two env vars in the pod launched by Calrissian
@@ -59,43 +57,32 @@ class TestSentinel2Composites(unittest.TestCase):
                 return None
 
             def get_secrets(self):
-                username = ""
-                password = ""
-                email = ""
-                registry = "https://index.docker.io/v1/"
+                username = os.getenv("CR_USERNAME", None)
+                password = os.getenv("CR_TOKEN", None)
+                registry = os.getenv("CR_ENDPOINT", None)
 
                 auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("utf-8")
 
-                secret_config = {
+                return {
                     "auths": {
                         registry: {
                             "username": username,
-                            "password": password,
-                            "email": email,
                             "auth": auth,
                         },
-                        "registry.gitlab.com": {"auth": ""},  # noqa: E501
                     }
                 }
 
-                return secret_config
-
             def get_additional_parameters(self):
-                endpoint = ""
-                region = ""
-                access_key = ""
-                secret_key = ""
-
                 return {
-                    "ADES_STAGEOUT_AWS_SERVICEURL": endpoint,
-                    "ADES_STAGEOUT_AWS_REGION": region,
-                    "ADES_STAGEOUT_AWS_ACCESS_KEY_ID": access_key,
-                    "ADES_STAGEOUT_AWS_SECRET_ACCESS_KEY": secret_key,
-                    "ADES_STAGEIN_AWS_SERVICEURL": endpoint,
-                    "ADES_STAGEIN_AWS_REGION": region,
-                    "ADES_STAGEIN_AWS_ACCESS_KEY_ID": access_key,
-                    "ADES_STAGEIN_AWS_SECRET_ACCESS_KEY": secret_key,
-                    "ADES_STAGEOUT_OUTPUT": "s3://eoepca-ades",
+                    "ADES_STAGEOUT_AWS_SERVICEURL": os.getenv("AWS_SERVICE_URL", None),
+                    "ADES_STAGEOUT_AWS_REGION": os.getenv("AWS_REGION", None),
+                    "ADES_STAGEOUT_AWS_ACCESS_KEY_ID": os.getenv("AWS_ACCESS_KEY_ID", None),
+                    "ADES_STAGEOUT_AWS_SECRET_ACCESS_KEY": os.getenv("AWS_SECRET_ACCESS_KEY", None),
+                    "ADES_STAGEIN_AWS_SERVICEURL": os.getenv("AWS_SERVICE_URL", None),
+                    "ADES_STAGEIN_AWS_REGION": os.getenv("AWS_REGION", None),
+                    "ADES_STAGEIN_AWS_ACCESS_KEY_ID": os.getenv("AWS_ACCESS_KEY_ID", None),
+                    "ADES_STAGEIN_AWS_SECRET_ACCESS_KEY": os.getenv("AWS_SECRET_ACCESS_KEY", None),
+                    "ADES_STAGEOUT_OUTPUT": os.getenv("AWS_ACCESS_KEY_ID", None),
                 }
 
             def handle_outputs(self, log, output, usage_report):
@@ -144,7 +131,6 @@ class TestSentinel2Composites(unittest.TestCase):
 
         runner = ZooCalrissianRunner(
             cwl=self.cwl,
-            zoo=self.zoo,
             conf=self.conf,
             inputs=inputs,
             outputs=outputs,

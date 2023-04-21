@@ -11,3 +11,5 @@ build
 *.pyc
 .DS_Store
 src/test.cwl
+.env
+*.log

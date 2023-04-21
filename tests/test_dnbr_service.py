@@ -1,23 +1,11 @@
-import os
 import unittest
 
-from .dbnr.service import dnbr
+from .dnbr.service import dnbr
 
 
 class TestSentinel2DNBRService(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        os.environ["CR_USERNAME"] = ""
-        os.environ["CR_TOKEN"] = ""
-        os.environ["CR_ENDPOINT"] = "https://index.docker.io/v1/"
-
-        os.environ["AWS_SERVICE_URL"] = ""
-        os.environ["AWS_REGION"] = ""
-        os.environ["AWS_ACCESS_KEY_ID"] = ""
-        os.environ["AWS_SECRET_ACCESS_KEY"] = ""
-
-        os.environ["KUBECONFIG"] = "/home/mambauser/.kube/kubeconfig-t2-dev.yaml"
-
         class ZooStub(object):
             def __init__(self):
                 self.SERVICE_SUCCEEDED = 3

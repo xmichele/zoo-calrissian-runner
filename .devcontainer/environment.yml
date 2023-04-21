@@ -11,11 +11,13 @@ dependencies:
   - autoflake
   - pylint
   - nose2
-  - cwl-wrapper >= 0.10.0
-  - pycalrissian
+  - pycalrissian >= 0.6.0
+  - cwl-wrapper >= 0.11.7
   - pip
   - pip:
     - kubernetes
     - pdocs
-    - cwl-utils
+    - cwl-utils==0.12
+    - attrs
+    - python-dotenv
   - loguru
