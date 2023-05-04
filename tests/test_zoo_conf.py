@@ -34,7 +34,7 @@ class TestCalrissianContext(unittest.TestCase):
 
             conf = {}
             conf["lenv"] = {"message": ""}
-            conf["lenv"] = {"workflow_id": "dnbr"}
+            conf["lenv"] = {"Identifier": "dnbr"}
 
             cls.conf = conf
 
@@ -55,105 +55,80 @@ class TestCalrissianContext(unittest.TestCase):
             cls.cwl = cwl
 
     def test_zoo_object(self):
-
         self.assertEquals(self.zoo.SERVICE_SUCCEEDED, 3)
 
     def test_object_creation(self):
-
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=None, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=None, outputs=None)
 
         self.assertIsInstance(runner, ZooCalrissianRunner)
 
     def test_get_input_invalid_value(self):
-
         inputs = {}
 
         inputs["_cwl"] = {"value": "value1"}
         inputs["_workflow_id"] = {"value": "dbnr"}
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
 
         with self.assertRaises(KeyError):
             runner.inputs.get_input_value("missing_key")
 
     def test_get_input_value(self):
-
         inputs = {}
 
         inputs["input_1"] = {"value": "value1"}
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
 
         self.assertEquals(runner.inputs.get_input_value("input_1"), "value1")
 
     def test_wrapper(self):
-
         inputs = {}
 
         inputs["param_1"] = {"value": "value1"}
         inputs["param_2"] = {"value": "value2"}
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
 
         wrapped = runner.wrap()
 
         self.assertIsInstance(wrapped, dict)
 
     def test_get_processing_parameters(self):
-
         inputs = {}
 
         inputs["param_1"] = {"value": "value1"}
         inputs["param_2"] = {"value": "value2"}
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
 
         params = {"param_1": "value1", "param_2": "value2"}
 
         self.assertEquals(params, runner.get_processing_parameters())
 
     def test_get_workflow(self):
-
         inputs = {}
 
         inputs["param_1"] = {"value": "value1"}
         inputs["param_2"] = {"value": "value2"}
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
         print(type(runner.cwl.get_workflow()))
         self.assertIsInstance(runner.cwl.get_workflow(), Workflow)
 
     def test_get_wrong_workflow(self):
-
         conf = {}
         conf["lenv"] = {"message": ""}
-        conf["lenv"] = {"workflow_id": "not_available"}
+        conf["lenv"] = {"Identifier": "not_available"}
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=conf, inputs=self.inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=conf, inputs=self.inputs, outputs=None)
         with self.assertRaises(ValueError):
             runner.cwl.get_workflow()
 
     def test_get_workflow_inputs(self):
-
         inputs = {}
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
 
         self.assertEquals(
             set(["pre_stac_item", "post_stac_item", "aoi", "bands"]),
@@ -161,12 +136,9 @@ class TestCalrissianContext(unittest.TestCase):
         )
 
     def test_get_workflow_inputs_bis(self):
-
         inputs = {}
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
 
         self.assertEquals(
             set(["pre_stac_item", "post_stac_item", "aoi", "bands"]),
@@ -174,19 +146,15 @@ class TestCalrissianContext(unittest.TestCase):
         )
 
     def test_get_only_mandatory_inputs(self):
-
         inputs = ()
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
         self.assertTrue(
             set(runner.get_workflow_inputs(mandatory=True)),
             set(["pre_stac_item", "post_stac_item"]),
         )
 
     def test_assert_all_parameters_missing(self):
-
         inputs = {
             "post_stac_item": {
                 "value": "https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs/items/S2B_53HPA_20210723_0_L2A"  # noqa: E501
@@ -194,15 +162,12 @@ class TestCalrissianContext(unittest.TestCase):
             "aoi": {"value": "136.659,-35.96,136.923,-35.791"},
         }
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
         print(list(runner.get_processing_parameters().keys()))
         print(runner.get_workflow_inputs(mandatory=True))
         self.assertFalse(runner.assert_parameters())
 
     def test_assert_all_parameters(self):
-
         inputs = {
             "post_stac_item": {
                 "value": "https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs/items/S2B_53HPA_20210723_0_L2A"  # noqa: E501
@@ -213,8 +178,6 @@ class TestCalrissianContext(unittest.TestCase):
             "aoi": {"value": "136.659,-35.96,136.923,-35.791"},
         }
 
-        runner = ZooCalrissianRunner(
-            cwl=self.cwl, zoo=self.zoo, conf=self.conf, inputs=inputs, outputs=None
-        )
+        runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=None)
 
         self.assertTrue(runner.assert_parameters())

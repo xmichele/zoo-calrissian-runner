@@ -23,6 +23,8 @@ plugins:
 nav:
   - Introduction: 'index.md'
   - Installation: 'installation.md'
+  - Getting started: 'started.md'
+  - Configuration: 'configuration.md'
   - API:
     - zoo_calrissian_runner: api/zoo_calrissian_runner/index.md
     - handlers: api/zoo_calrissian_runner/handlers.md

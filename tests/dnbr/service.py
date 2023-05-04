@@ -4,8 +4,11 @@ import os
 import pathlib
 
 import yaml
+from dotenv import load_dotenv
 
 from zoo_calrissian_runner import ExecutionHandler, ZooCalrissianRunner
+
+load_dotenv()
 
 try:
     import zoo
@@ -34,14 +37,13 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
         return None
 
     def get_secrets(self):
-
         username = os.getenv("CR_USERNAME", None)
         password = os.getenv("CR_TOKEN", None)
         registry = os.getenv("CR_ENDPOINT", None)
 
         auth = base64.b64encode(f"{username}:{password}".encode("utf-8")).decode("utf-8")
 
-        secret_config = {
+        return {
             "auths": {
                 registry: {
                     "username": username,
@@ -50,10 +52,7 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
             }
         }
 
-        return secret_config
-
     def get_additional_parameters(self):
-
         return {
             "ADES_STAGEOUT_AWS_SERVICEURL": os.getenv("AWS_SERVICE_URL", None),
             "ADES_STAGEOUT_AWS_REGION": os.getenv("AWS_REGION", None),
@@ -63,11 +62,10 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
             "ADES_STAGEIN_AWS_REGION": os.getenv("AWS_REGION", None),
             "ADES_STAGEIN_AWS_ACCESS_KEY_ID": os.getenv("AWS_ACCESS_KEY_ID", None),
             "ADES_STAGEIN_AWS_SECRET_ACCESS_KEY": os.getenv("AWS_SECRET_ACCESS_KEY", None),
-            "ADES_STAGEOUT_OUTPUT": "s3://eoepca-ades",
+            "ADES_STAGEOUT_OUTPUT": os.getenv("ADES_STAGEOUT_OUTPUT", "s3://eoepca-ades"),
         }
 
-    def handle_outputs(self, log, output, usage_report):
-
+    def handle_outputs(self, log, output, usage_report, tool_logs):
         os.makedirs(
             os.path.join(self.conf["tmpPath"], self.job_id),
             mode=0o777,
@@ -95,9 +93,19 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
         with open(os.path.join(self.conf["tmpPath"], self.job_id, "report.json"), "w") as report_file:
             json.dump(aggregated_outputs, report_file, indent=4)
 
+        self.conf["service_logs"] = [
+            {
+                "url": f"https://someurl.com/{os.path.basename(tool_log)}",
+                "title": f"Tool log {os.path.basename(tool_log)}",
+                "rel": "related",
+            }
+            for tool_log in tool_logs
+        ]
+
+        print(self.conf)
+
 
 def dnbr(conf, inputs, outputs):
-
     with open(
         os.path.join(
             pathlib.Path(os.path.realpath(__file__)).parent.absolute(),
@@ -117,7 +125,6 @@ def dnbr(conf, inputs, outputs):
     exit_status = runner.execute()
 
     if exit_status == zoo.SERVICE_SUCCEEDED:
-
         outputs = runner.outputs
         return zoo.SERVICE_SUCCEEDED
 
