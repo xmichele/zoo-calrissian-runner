@@ -119,7 +119,7 @@ class TestCalrissianContext(unittest.TestCase):
     def test_get_wrong_workflow(self):
         conf = {}
         conf["lenv"] = {"message": ""}
-        conf["lenv"] = {"workflow_id": "not_available"}
+        conf["lenv"] = {"Identifier": "not_available"}
 
         runner = ZooCalrissianRunner(cwl=self.cwl, conf=conf, inputs=self.inputs, outputs=None)
         with self.assertRaises(ValueError):

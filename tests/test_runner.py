@@ -5,10 +5,10 @@ import tempfile
 import unittest
 
 import yaml
+from dotenv import load_dotenv
 
 from zoo_calrissian_runner import ZooCalrissianRunner
 from zoo_calrissian_runner.handlers import ExecutionHandler
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -40,7 +40,7 @@ class TestRunnerResources(unittest.TestCase):
 
         conf = {}
         conf["lenv"] = {"message": ""}
-        conf["lenv"] = {"workflow_id": "burned-area"}
+        conf["lenv"] = {"Identifier": "burned-area"}
         conf["tmpPath"] = "/tmp"
 
         cls.conf = conf

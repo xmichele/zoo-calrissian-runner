@@ -5,12 +5,14 @@ import tempfile
 import unittest
 
 import yaml
-from dotenv import load_dotenv
 
 from zoo_calrissian_runner import ZooCalrissianRunner
 from zoo_calrissian_runner.handlers import ExecutionHandler
 
-load_dotenv()
+# from dotenv import load_dotenv
+
+
+# load_dotenv()
 
 
 class TestSentinel2SExpressions(unittest.TestCase):
@@ -40,7 +42,7 @@ class TestSentinel2SExpressions(unittest.TestCase):
 
         conf = {}
         conf["lenv"] = {"message": ""}
-        conf["lenv"] = {"workflow_id": "s-expression"}
+        conf["lenv"] = {"Identifier": "s-expression"}
         conf["tmpPath"] = "/tmp"
 
         cls.conf = conf

@@ -4,8 +4,11 @@ import os
 import pathlib
 
 import yaml
+from dotenv import load_dotenv
 
 from zoo_calrissian_runner import ExecutionHandler, ZooCalrissianRunner
+
+load_dotenv()
 
 try:
     import zoo
@@ -59,7 +62,7 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
             "ADES_STAGEIN_AWS_REGION": os.getenv("AWS_REGION", None),
             "ADES_STAGEIN_AWS_ACCESS_KEY_ID": os.getenv("AWS_ACCESS_KEY_ID", None),
             "ADES_STAGEIN_AWS_SECRET_ACCESS_KEY": os.getenv("AWS_SECRET_ACCESS_KEY", None),
-            "ADES_STAGEOUT_OUTPUT": "s3://eoepca-ades",
+            "ADES_STAGEOUT_OUTPUT": os.getenv("ADES_STAGEOUT_OUTPUT", "s3://eoepca-ades"),
         }
 
     def handle_outputs(self, log, output, usage_report, tool_logs):
