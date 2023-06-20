@@ -219,10 +219,10 @@ class ZooOutputs:
 
     def set_output(self, value):
         """set the output result value"""
-        if "Result" in self.outputs.keys():
-            self.outputs["Result"]["value"] = value
+        if "stac" in self.outputs.keys():
+            self.outputs["stac"]["value"] = value
         else:
-            self.outputs["Result"] = {"value": value}
+            self.outputs["stac"] = {"value": value}
 
 
 class ZooCalrissianRunner:
