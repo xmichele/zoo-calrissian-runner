@@ -194,6 +194,16 @@ class ZooConf:
 
 class ZooInputs:
     def __init__(self, inputs):
+        # this conversion is necessary
+        # because zoo converts array of length 1 to a string
+        for inp in inputs:
+            if (
+                "maxOccurs" in inputs[inp].keys()
+                and int(inputs[inp]["maxOccurs"]) > 1
+                and not isinstance(inputs[inp]["value"], list)
+            ):
+                inputs[inp]["value"] = [inputs[inp]["value"]]
+
         self.inputs = inputs
 
     def get_input_value(self, key):
