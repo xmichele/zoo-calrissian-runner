@@ -298,7 +298,7 @@ class ZooCalrissianRunner:
         """creates or returns the namespace"""
         if self._namespace_name is None:
             return self.shorten_namespace(
-                f"{self.zoo_conf.workflow_id}-"
+                f"{str(self.zoo_conf.workflow_id).replace('_', '-')}-"
                 f"{str(datetime.now().timestamp()).replace('.', '')}-{uuid.uuid4()}"
             )
         else:
