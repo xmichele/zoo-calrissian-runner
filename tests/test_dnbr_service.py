@@ -1,7 +1,6 @@
 import unittest
 
-from .dnbr.service import dnbr
-
+from dnbr.service import dnbr
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,7 +31,7 @@ class TestSentinel2DNBRService(unittest.TestCase):
 
         conf = {}
         conf["lenv"] = {"message": ""}
-        conf["lenv"] = {"workflow_id": "dnbr"}
+        conf["lenv"] = {"Identifier": "dnbr"}
         conf["tmpPath"] = "/tmp"
 
         cls.conf = conf

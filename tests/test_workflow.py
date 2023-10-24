@@ -1,11 +1,13 @@
-import unittest
 import os
-import yaml
-from zoo_calrissian_runner import Workflow
-import cwl_utils
-from dotenv import load_dotenv
+import unittest
 
-load_dotenv()
+import cwl_utils
+import yaml
+
+from zoo_calrissian_runner import Workflow
+
+# from dotenv import load_dotenv
+# load_dotenv()
 
 
 class TestWorkflow(unittest.TestCase):

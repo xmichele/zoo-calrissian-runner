@@ -18,7 +18,7 @@ dependencies:
   - pip:
     - kubernetes
     - pdocs
-    - cwl-utils==0.12
+    - cwl-utils==0.14
     - attrs
     - python-dotenv
   - loguru

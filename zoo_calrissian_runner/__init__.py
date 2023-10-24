@@ -1,7 +1,10 @@
+import inspect
 import os
 import uuid
 from datetime import datetime
 from typing import Union
+
+import attr
 import cwl_utils
 from cwl_utils.parser import load_document_by_yaml
 from cwl_wrapper.parser import Parser
@@ -11,9 +14,6 @@ from pycalrissian.execution import CalrissianExecution
 from pycalrissian.job import CalrissianJob
 
 from zoo_calrissian_runner.handlers import ExecutionHandler
-import attr
-
-import inspect
 
 
 # useful class for hints in CWL
@@ -189,7 +189,7 @@ class Workflow:
 class ZooConf:
     def __init__(self, conf):
         self.conf = conf
-        self.workflow_id = self.conf["lenv"]["workflow_id"]
+        self.workflow_id = self.conf["lenv"]["Identifier"]
 
 
 class ZooInputs:
@@ -219,10 +219,10 @@ class ZooOutputs:
 
     def set_output(self, value):
         """set the output result value"""
-        if "Result" in self.outputs.keys():
-            self.outputs["Result"]["value"] = value
+        if "stac" in self.outputs.keys():
+            self.outputs["stac"]["value"] = value
         else:
-            self.outputs["Result"] = {"value": value}
+            self.outputs["stac"] = {"value": value}
 
 
 class ZooCalrissianRunner:
