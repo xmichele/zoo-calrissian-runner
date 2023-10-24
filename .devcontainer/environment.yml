@@ -4,6 +4,7 @@ channels:
   - conda-forge
   - eoepca
 dependencies:
+  - python==3.10
   - black
   - pre-commit
   - isort

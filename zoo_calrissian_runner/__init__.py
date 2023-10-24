@@ -267,6 +267,8 @@ class ZooCalrissianRunner:
         if volume_size == 0:
             volume_size = os.environ.get("DEFAULT_VOLUME_SIZE")
 
+        logger.info(f"volume_size: {volume_size}Mi")
+
         return f"{volume_size}Mi"
 
     def get_max_cores(self) -> int:
