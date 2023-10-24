@@ -10,8 +10,6 @@ load_dotenv()
 class TestSentinel2DNBRService(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        load_dotenv()
-
         class ZooStub(object):
             def __init__(self):
                 self.SERVICE_SUCCEEDED = 3
