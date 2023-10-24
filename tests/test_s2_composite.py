@@ -8,6 +8,9 @@ import yaml
 
 from zoo_calrissian_runner import ZooCalrissianRunner
 from zoo_calrissian_runner.handlers import ExecutionHandler
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class TestSentinel2Composites(unittest.TestCase):
@@ -85,7 +88,7 @@ class TestSentinel2Composites(unittest.TestCase):
                     "ADES_STAGEOUT_OUTPUT": os.getenv("AWS_ACCESS_KEY_ID", None),
                 }
 
-            def handle_outputs(self, log, output, usage_report):
+            def handle_outputs(self, log, output, usage_report, tool_logs):
                 os.makedirs(
                     os.path.join(self.conf["tmpPath"], self.job_id),
                     mode=0o777,

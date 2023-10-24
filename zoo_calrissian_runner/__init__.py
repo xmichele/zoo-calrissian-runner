@@ -277,6 +277,8 @@ class ZooCalrissianRunner:
         if volume_size == 0:
             volume_size = os.environ.get("DEFAULT_VOLUME_SIZE")
 
+        logger.info(f"volume_size: {volume_size}Mi")
+
         return f"{volume_size}Mi"
 
     def get_max_cores(self) -> int:
@@ -306,7 +308,7 @@ class ZooCalrissianRunner:
         """creates or returns the namespace"""
         if self._namespace_name is None:
             return self.shorten_namespace(
-                f"{self.zoo_conf.workflow_id}-"
+                f"{str(self.zoo_conf.workflow_id).replace('_', '-')}-"
                 f"{str(datetime.now().timestamp()).replace('.', '')}-{uuid.uuid4()}"
             )
         else:
