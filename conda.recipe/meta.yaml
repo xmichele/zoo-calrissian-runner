@@ -18,7 +18,7 @@ requirements:
 
   run:
     - python
-    - pycalrissian
+    - pycalrissian==0.7.0
     - cwl-wrapper
 
 about:
