@@ -416,8 +416,12 @@ class ZooCalrissianRunner:
 
         self.update_status(progress=97, message="clean-up processing resources")
 
-        logger.info("clean-up kubernetes resources")
-        # session.dispose()
+        # use an environment variable to decide if we want to clean up the resources
+        if os.environ.get("KEEP_SESSION", "false") == "false":
+            logger.info("clean-up kubernetes resources")
+            session.dispose()
+        else:
+            logger.info("kubernetes resources not cleaned up")
 
         self.update_status(
             progress=100,
