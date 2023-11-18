@@ -418,21 +418,25 @@ class ZooCalrissianRunner:
 
         logger.info("handle outputs execution logs")
         output = execution.get_output()
+        log = execution.get_log()
+        usage_report = execution.get_usage_report()
+        tool_logs = execution.get_tool_logs()
+
         self.outputs.set_output(output)
 
         self.handler.handle_outputs(
-            log=execution.get_log(),
+            log=log,
             output=output,
-            usage_report=execution.get_usage_report(),
-            tool_logs=execution.get_tool_logs(),
+            usage_report=usage_report,
+            tool_logs=tool_logs,
         )
 
         self.update_status(progress=97, message="Post-execution hook")
         self.handler.post_execution_hook(
-            log=execution.get_log(),
+            log=log,
             output=output,
-            usage_report=execution.get_usage_report(),
-            tool_logs=execution.get_tool_logs(),
+            usage_report=usage_report,
+            tool_logs=tool_logs,
         )
 
         self.update_status(progress=99, message="clean-up processing resources")
