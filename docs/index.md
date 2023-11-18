@@ -72,7 +72,7 @@ class ExecutionHandler(ABC):
 
 ## Service execution
 
-The service execution follows the ZooCalrissianRunner execution defined in its `execute` method.
+The service execution follows the `ZooCalrissianRunner` execution defined in its `execute` method.
 
 ## What EOEPCA provides
 
