@@ -5,10 +5,11 @@
 ### K8S
 
 * `STORAGE_CLASS`: defines the k8s RWX storage class for Calrissian. Defaults to `longhorn`
+* `KEEP_SESSION`: if set to `true`, the session and thus the kubernetes namespace is not deleted
 
 ### CWL Wrapper
 
-The cwl-wrapper templates can be customized with the eenvironment variables:
+The cwl-wrapper templates can be customized with the environment variables:
 
 * `WRAPPER_STAGE_IN`: CWL stage-in template for cwl-wrapper. Defaults to `/assets/stagein.yaml`
 * `WRAPPER_STAGE_OUT`: CWL stage-out template for cwl-wrapper. Defaults to `/assets/stageout.yaml`
