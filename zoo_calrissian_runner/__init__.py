@@ -168,7 +168,7 @@ class Workflow:
                     if resource_requirement := self.get_resource_requirement(
                         self.get_object_by_id(step.run[1:])
                     ):
-                        multiplier = 2 if step.scatter else 1
+                        multiplier = int(os.getenv("SCATTER_MULTIPLIER", 2)) if step.scatter else 1
                         for resource_type in [
                             "coresMin",
                             "coresMax",
@@ -341,7 +341,7 @@ class ZooCalrissianRunner:
         )
 
     def execute(self):
-        self.update_status(progress=97, message="Pre-execution hook")
+        self.update_status(progress=2, message="Pre-execution hook")
         self.handler.pre_execution_hook()
 
         if not (self.assert_parameters()):
