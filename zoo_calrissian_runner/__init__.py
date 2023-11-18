@@ -428,7 +428,12 @@ class ZooCalrissianRunner:
         )
 
         self.update_status(progress=97, message="Post-execution hook")
-        self.handler.post_execution_hook()
+        self.handler.post_execution_hook(
+            log=execution.get_log(),
+            output=output,
+            usage_report=execution.get_usage_report(),
+            tool_logs=execution.get_tool_logs(),
+        )
 
         self.update_status(progress=99, message="clean-up processing resources")
 
