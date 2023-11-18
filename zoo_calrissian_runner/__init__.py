@@ -341,16 +341,19 @@ class ZooCalrissianRunner:
         )
 
     def execute(self):
+        self.update_status(progress=97, message="Pre-execution hook")
+        self.handler.pre_execution_hook()
+
         if not (self.assert_parameters()):
             logger.error("Mandatory parameters missing")
             return zoo.SERVICE_FAILED
 
         logger.info("execution started")
-        self.update_status(progress=2, message="starting execution")
+        self.update_status(progress=5, message="starting execution")
 
         logger.info("wrap CWL workflow with stage-in/out steps")
         wrapped_workflow = self.wrap()
-        self.update_status(progress=5, message="workflow wrapped, creating processing environment")
+        self.update_status(progress=10, message="workflow wrapped, creating processing environment")
 
         logger.info("create kubernetes namespace for Calrissian execution")
 
@@ -370,7 +373,7 @@ class ZooCalrissianRunner:
             image_pull_secrets=secret_config,
         )
         session.initialise()
-        self.update_status(progress=10, message="processing environment created, preparing execution")
+        self.update_status(progress=15, message="processing environment created, preparing execution")
 
         processing_parameters = {
             "process": namespace,
@@ -395,7 +398,7 @@ class ZooCalrissianRunner:
             tool_logs=True,
         )
 
-        self.update_status(progress=18, message="execution submitted")
+        self.update_status(progress=20, message="execution submitted")
 
         logger.info("execution")
         execution = CalrissianExecution(job=job, runtime_context=session)
@@ -424,7 +427,10 @@ class ZooCalrissianRunner:
             tool_logs=execution.get_tool_logs(),
         )
 
-        self.update_status(progress=97, message="clean-up processing resources")
+        self.update_status(progress=97, message="Post-execution hook")
+        self.handler.post_execution_hook()
+
+        self.update_status(progress=99, message="clean-up processing resources")
 
         # use an environment variable to decide if we want to clean up the resources
         if os.environ.get("KEEP_SESSION", "false") == "false":
