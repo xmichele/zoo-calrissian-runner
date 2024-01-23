@@ -253,7 +253,14 @@ class ZooCalrissianRunner:
 
         self.storage_class = os.environ.get("STORAGE_CLASS", "openebs-nfs-test")
         self.monitor_interval = 30
-        self._namespace_name = None
+        if "lenv" in self.zoo_conf.conf and "usid" in self.zoo_conf.conf["lenv"]:
+            uuidString=self.zoo_conf.conf['lenv']['usid']
+            self._namespace_name = self.shorten_namespace(
+                f"{str(self.zoo_conf.workflow_id).replace('_', '-')}-"
+                f"{uuidString}"
+            )
+        else:
+            self._namespace_name = None
 
     @staticmethod
     def shorten_namespace(value: str) -> str:
