@@ -103,21 +103,25 @@ class Workflow:
         Returns:
             cwl_utils.parser.cwl_v1_2.ResourceRequirement or ResourceRequirement
         """
-        resource_requirement = [
-            requirement
-            for requirement in elem.requirements
-            if isinstance(
-                requirement,
-                (
-                    cwl_utils.parser.cwl_v1_0.ResourceRequirement,
-                    cwl_utils.parser.cwl_v1_1.ResourceRequirement,
-                    cwl_utils.parser.cwl_v1_2.ResourceRequirement,
-                ),
-            )
-        ]
+        resource_requirement = []
+        
+        # look for requirements
+        if elem.requirements is not None:
+            resource_requirement = [
+                requirement
+                for requirement in elem.requirements
+                if isinstance(
+                    requirement,
+                    (
+                        cwl_utils.parser.cwl_v1_0.ResourceRequirement,
+                        cwl_utils.parser.cwl_v1_1.ResourceRequirement,
+                        cwl_utils.parser.cwl_v1_2.ResourceRequirement,
+                    ),
+                )
+            ]
 
-        if len(resource_requirement) == 1:
-            return resource_requirement[0]
+            if len(resource_requirement) == 1:
+                return resource_requirement[0]
 
         # look for hints
         if elem.hints is not None:
@@ -127,8 +131,8 @@ class Workflow:
                 if hint["class"] == "ResourceRequirement"
             ]
 
-        if len(resource_requirement) == 1:
-            return resource_requirement[0]
+            if len(resource_requirement) == 1:
+                return resource_requirement[0]
 
     def eval_resource(self):
         resources = {
