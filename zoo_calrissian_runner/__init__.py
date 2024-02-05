@@ -226,6 +226,14 @@ class ZooInputs:
 class ZooOutputs:
     def __init__(self, outputs):
         self.outputs = outputs
+        # decuce the output key
+        output_keys = list(self.outputs.keys())
+        if len(output_keys) > 0:
+            self.output_key = output_keys[0]
+        else:
+            self.output_key = "stac"
+            if "stac" not in self.outputs.keys():
+                self.outputs["stac"] = {}
 
     def get_output_parameters(self):
         """Returns a list with the output parameters keys"""
@@ -233,10 +241,7 @@ class ZooOutputs:
 
     def set_output(self, value):
         """set the output result value"""
-        if "stac" in self.outputs.keys():
-            self.outputs["stac"]["value"] = value
-        else:
-            self.outputs["stac"] = {"value": value}
+        self.outputs[self.output_key]["value"] = value
 
 
 class ZooCalrissianRunner:
