@@ -225,20 +225,18 @@ class ZooInputs:
         for key, value in self.inputs.items():
             if "dataType" in value:
                 has_val=False
-                if value["dataType"]=="double":
+                if value["dataType"]=="double" or value["dataType"]=="float":
                     res[key]=float(value["value"])
                     has_val=True
-                if value["dataType"]=="integer":
+                elif value["dataType"]=="integer":
                     res[key]=int(value["value"])
                     has_val=True
-                if value["dataType"]=="boolean":
+                elif value["dataType"]=="boolean":
                     res[key]=bool(value["value"])
                     has_val=True
-                if not(has_val):
+                else:
                     res[key]=value["value"]
-        return res #{key: value["value"] for key, value in self.inputs.items()}
-
-        return {key: value["value"] for key, value in self.inputs.items()}
+        return res 
 
 
 class ZooOutputs:
