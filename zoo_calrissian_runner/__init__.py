@@ -1,5 +1,6 @@
 import inspect
 import os
+import sys
 import uuid
 from datetime import datetime
 from typing import Union
@@ -12,6 +13,7 @@ from loguru import logger
 from pycalrissian.context import CalrissianContext
 from pycalrissian.execution import CalrissianExecution
 from pycalrissian.job import CalrissianJob
+from pycalrissian.utils import copy_to_volume
 
 from zoo_calrissian_runner.handlers import ExecutionHandler
 
@@ -224,17 +226,39 @@ class ZooInputs:
         hasVal=False;
         for key, value in self.inputs.items():
             if "dataType" in value:
-                match value["dataType"]:
-                    case w if w in ["double","float"]:
-                        res[key]=float(value["value"])
-                    case "integer":
-                        res[key]=int(value["value"])
-                    case "boolean":
-                        res[key]=int(value["value"])
-                    case _:
-                        res[key]=value["value"]
+                print(value,file=sys.stderr)
+                if isinstance(value["dataType"],list):
+                    print(value["value"],file=sys.stderr)
+                    # How should we pass array for an input?
+                    import json
+                    res[key]=value["value"]
+                else:
+                    match value["dataType"]:
+                        case w if w in ["double","float"]:
+                            res[key]=float(value["value"])
+                        case "integer":
+                            res[key]=int(value["value"])
+                        case "boolean":
+                            res[key]=int(value["value"])
+                        case _:
+                            res[key]=value["value"]
             else:
-                res[key]=value["value"]
+                if "cache_file" in value:
+                    print(value,file=sys.stderr)
+                    if "mimeType" in value:
+                        res[key]={
+                            "class": "File",
+                            "path": value["cache_file"],
+                            "format": value["mimeType"]
+                        }
+                    else:
+                        res[key]={
+                            "class": "File",
+                            "path": value["cache_file"],
+                            "format": "text/plain"
+                        }
+                else:
+                    res[key]=value["value"]
         return res 
 
 
@@ -412,6 +436,32 @@ class ZooCalrissianRunner:
             **self.handler.get_additional_parameters(),
         }
 
+
+        self.update_status(progress=20, message="upload required files")
+
+
+        # Upload input complex data into calrissian_wdir
+        for i in processing_parameters:
+            if isinstance(processing_parameters[i],dict):
+                if processing_parameters[i]["class"]=="File":
+                    copy_to_volume(
+                        context=session,
+                        volume={
+                            "name": session.calrissian_wdir,
+                            "persistentVolumeClaim": {
+                                "claimName": session.calrissian_wdir
+                            }
+                        },
+                        volume_mount={
+                            "name": session.calrissian_wdir,
+                            "mountPath": "/calrissian",
+                        },
+                        source_paths=[
+                            processing_parameters[i]["path"]
+                        ],
+                        destination_path="/calrissian",
+                    )
+                    processing_parameters[i]["path"]=processing_parameters[i]["path"].replace(self.zoo_conf.conf["main"]["tmpPath"],"/calrissian")
         # checks if all parameters where provided
 
         logger.info("create Calrissian job")
@@ -429,7 +479,7 @@ class ZooCalrissianRunner:
             tool_logs=True,
         )
 
-        self.update_status(progress=20, message="execution submitted")
+        self.update_status(progress=23, message="execution submitted")
 
         logger.info("execution")
         execution = CalrissianExecution(job=job, runtime_context=session)
