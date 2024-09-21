@@ -233,15 +233,14 @@ class ZooInputs:
                     import json
                     res[key]=value["value"]
                 else:
-                    match value["dataType"]:
-                        case w if w in ["double","float"]:
-                            res[key]=float(value["value"])
-                        case "integer":
-                            res[key]=int(value["value"])
-                        case "boolean":
-                            res[key]=int(value["value"])
-                        case _:
-                            res[key]=value["value"]
+                    if value["dataType"] in ["double","float"]:
+                        res[key]=float(value["value"])
+                    elif value["dataType"] == "integer":
+                        res[key]=int(value["value"])
+                    elif value["dataType"] == "boolean":
+                        res[key]=int(value["value"])
+                    else:
+                        res[key]=value["value"]
             else:
                 if "cache_file" in value:
                     print(value,file=sys.stderr)
