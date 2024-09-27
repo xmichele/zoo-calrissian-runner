@@ -481,15 +481,15 @@ class ZooCalrissianRunner:
         self.update_status(progress=23, message="execution submitted")
 
         logger.info("execution")
-        execution = CalrissianExecution(job=job, runtime_context=session)
-        execution.submit()
+        self.execution = CalrissianExecution(job=job, runtime_context=session)
+        self.execution.submit()
 
-        execution.monitor(interval=self.monitor_interval)
+        self.execution.monitor(interval=self.monitor_interval)
 
-        if execution.is_complete():
+        if self.execution.is_complete():
             logger.info("execution complete")
 
-        if execution.is_succeeded():
+        if self.execution.is_succeeded():
             exit_value = zoo.SERVICE_SUCCEEDED
         else:
             exit_value = zoo.SERVICE_FAILED
@@ -497,10 +497,10 @@ class ZooCalrissianRunner:
         self.update_status(progress=90, message="delivering outputs, logs and usage report")
 
         logger.info("handle outputs execution logs")
-        output = execution.get_output()
-        log = execution.get_log()
-        usage_report = execution.get_usage_report()
-        tool_logs = execution.get_tool_logs()
+        output = self.execution.get_output()
+        log = self.execution.get_log()
+        usage_report = self.execution.get_usage_report()
+        tool_logs = self.execution.get_tool_logs()
 
         self.outputs.set_output(output)
 
