@@ -226,9 +226,7 @@ class ZooInputs:
         hasVal=False;
         for key, value in self.inputs.items():
             if "dataType" in value:
-                print(value,file=sys.stderr)
                 if isinstance(value["dataType"],list):
-                    print(value["value"],file=sys.stderr)
                     # How should we pass array for an input?
                     import json
                     res[key]=value["value"]
@@ -243,7 +241,6 @@ class ZooInputs:
                         res[key]=value["value"]
             else:
                 if "cache_file" in value:
-                    print(value,file=sys.stderr)
                     if "mimeType" in value:
                         res[key]={
                             "class": "File",
