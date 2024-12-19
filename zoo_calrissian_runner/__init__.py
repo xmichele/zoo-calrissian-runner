@@ -538,10 +538,10 @@ class ZooCalrissianRunner:
         wf = Parser(
             cwl=self.cwl.raw_cwl,
             output=None,
-            stagein=os.environ.get("WRAPPER_STAGE_IN", "/assets/stagein.yaml"),
-            stageout=os.environ.get("WRAPPER_STAGE_OUT", "/assets/stageout.yaml"),
-            maincwl=os.environ.get("WRAPPER_MAIN", "/assets/maincwl.yaml"),
-            rulez=os.environ.get("WRAPPER_RULES", "/assets/rules.yaml"),
+            stagein=os.environ.get("WRAPPER_STAGE_IN", "assets/stagein.yaml"),
+            stageout=os.environ.get("WRAPPER_STAGE_OUT", "assets/stageout.yaml"),
+            maincwl=os.environ.get("WRAPPER_MAIN", "assets/maincwl.yaml"),
+            rulez=os.environ.get("WRAPPER_RULES", "assets/rules.yaml"),
             assets=None,
             workflow_id=workflow_id,
         )

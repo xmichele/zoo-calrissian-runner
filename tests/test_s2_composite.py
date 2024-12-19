@@ -52,6 +52,14 @@ class TestSentinel2Composites(unittest.TestCase):
 
     def test_execution(self):
         class CalrissianRunnerExecutionHandler(ExecutionHandler):
+            def pre_execution_hook(self):
+                # Add logic here for actions before execution, if needed
+                pass
+
+            def post_execution_hook(self):
+                # Add logic here for actions after execution, if needed
+                pass
+            
             def get_pod_env_vars(self):
                 # sets two env vars in the pod launched by Calrissian
                 return {"A": "1", "B": "1"}
@@ -131,6 +139,7 @@ class TestSentinel2Composites(unittest.TestCase):
         }
 
         outputs = {"Result": {"value": ""}}
+        #os.environ["KUBECONFIG"] = ".kube-config"
 
         runner = ZooCalrissianRunner(
             cwl=self.cwl,
