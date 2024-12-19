@@ -5,7 +5,7 @@ name: Build and Test
 
 on:
   push:
-    branches: [ "ESAEOEPCA-184" ]
+    branches: [ "develop" ]
   pull_request:
     branches: [ "main" ]
 
