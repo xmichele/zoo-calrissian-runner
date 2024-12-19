@@ -35,6 +35,21 @@ jobs:
         key: ${{ runner.os }}-hatch
     - name: Build
       run: hatch build
-    #- name: Test
-    #  run: |
-    #    hatch -e test run nose2 --verbose
+     # Install Minikube
+    - name: Install Minikube
+      run: |
+        apt-get update -y
+        apt-get install -y apt-transport-https
+        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        install minikube-linux-amd64 /usr/local/bin/minikube
+    # Start Minikube
+    - name: Start Minikube
+      run: |
+        minikube start --driver=docker
+    # Set and export KUBECONFIG path
+    - name: Set KUBECONFIG path
+      run: |
+        cp ~/.kube/config ~/.kube/kubeconfig-t2-dev.yaml
+        echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+    - name: Test package
+      run: hatch -e test run nose2 --verbose
