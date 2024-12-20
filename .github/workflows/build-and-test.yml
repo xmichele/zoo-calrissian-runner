@@ -20,10 +20,10 @@ jobs:
     - name: setup pyenv
       uses: "gabrielfalcao/pyenv-action@v18"
       with:
-        default: 3.10.15
+        default: 3.10.6
         #versions: 3.8.16, 3.5.7
     - name: Create virtualenv for python 3.10
-      run: pyenv local 3.10.15 && python3 -mvenv .venv31015
+      run: pyenv install --list && pyenv local 3.10.6 && python3 -mvenv .venv3106
     - name: Verify Python Versions
       run: |
         source $GITHUB_ENV
