@@ -1,7 +1,7 @@
 $graph:
   - baseCommand: burned-area
     class: CommandLineTool
-    id: clt
+    id: main
     inputs:
       pre_event:
         inputBinding:

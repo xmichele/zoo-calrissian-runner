@@ -4,7 +4,7 @@ $graph:
   hints:
     DockerRequirement:
       dockerPull: eoepca/s-expression:dev0.0.2
-  id: clt
+  id: main
   inputs:
     input_reference:
       inputBinding:
