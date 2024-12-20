@@ -60,8 +60,8 @@ jobs:
         echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
     - name: Run Tests with Hatch
       run: |
-        source $GITHUB_ENV
-        export HATCH_PYTHON_PATH=$(which python3)
+        py3_path=$(which python3)
+        echo "HATCH_PYTHON_PATH=$py3_path" >> $GITHUB_ENV
         #hatch run test.py310:cov
         hatch -e test run nose2 --verbose
 
