@@ -33,7 +33,9 @@ jobs:
     - name: Install dependencies
       run: |
         # python -m pip install --upgrade pip
-        pip install hatch
+        sudo apt-get update -qy
+        sudo apt-get install -y pipx
+        pipx install hatch
     - name: Cache Hatch
       id: cache-hatch
       uses: actions/cache@v3
@@ -45,7 +47,6 @@ jobs:
      # Install Minikube
     - name: Install Minikube
       run: |
-        sudo apt-get update -y
         sudo apt-get install -y apt-transport-https
         sudo curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
         sudo install minikube-linux-amd64 /usr/local/bin/minikube
