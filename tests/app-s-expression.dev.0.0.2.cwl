@@ -63,7 +63,7 @@ $graph:
         cbn: cbn
       out:
       - results
-      run: '#clt'
+      run: '#main'
 $namespaces:
   s: https://schema.org/
 cwlVersion: v1.0

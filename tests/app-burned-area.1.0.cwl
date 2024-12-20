@@ -71,7 +71,7 @@ $graph:
           ndwi_threshold: ndwi_threshold
         out:
           - results
-        run: '#clt'
+        run: '#main'
 $namespaces:
   s: https://schema.org/
 s:softwareVersion: 1.0
