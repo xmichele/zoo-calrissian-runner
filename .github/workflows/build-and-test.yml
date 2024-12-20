@@ -71,5 +71,5 @@ jobs:
     - name: Run Tests with Hatch
       run: |
         #hatch run test.py310:cov
-        hatch -e test run +py=${{ matrix.python-version }} test:test
+        hatch -e test run +py=${{ matrix.python-version }} nose2
 
