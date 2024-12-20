@@ -54,14 +54,14 @@ jobs:
       run: |
         minikube start --driver=docker
     # Set and export KUBECONFIG path
-    - name: Set KUBECONFIG path
+    - name: Set Envs and paths
       run: |
         cp ~/.kube/config ~/.kube/kubeconfig-t2-dev.yaml
         echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
-    - name: Run Tests with Hatch
-      run: |
         py3_path=$(which python3)
         echo "HATCH_PYTHON_PATH=$py3_path" >> $GITHUB_ENV
+    - name: Run Tests with Hatch
+      run: |
         #hatch run test.py310:cov
         hatch -e test run nose2 --verbose
 
