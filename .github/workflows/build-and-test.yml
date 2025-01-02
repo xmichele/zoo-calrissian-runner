@@ -60,7 +60,7 @@ jobs:
     # Start Minikube
     - name: Start Minikube
       run: |
-        minikube start --driver=docker
+        minikube start --driver=docker --kubernetes-version v1.26.0
     # Set and export KUBECONFIG path
     - name: Set Envs and paths
       run: |
@@ -72,4 +72,3 @@ jobs:
       run: |
         #hatch run test.py310:cov
         hatch -e test run nose2
-
