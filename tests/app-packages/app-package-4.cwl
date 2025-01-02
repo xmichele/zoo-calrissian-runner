@@ -42,7 +42,7 @@ $graph:
         scatter: stac_item
         scatterMethod: dotproduct
       node_dnbr:
-        run: "#main_clt"
+        run: "#main"
         in:
           tifs:
             source: node_nbr/nbr
