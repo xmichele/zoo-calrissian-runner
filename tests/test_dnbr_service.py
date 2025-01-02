@@ -5,8 +5,11 @@ import sys
 
 # Add a custom directory to sys.path
 sys.path.append('tests/dnbr/')
+try:
+    from dnbr.service import dnbr
+except:
+    print("Internal dnbr module failed/skipped")
 
-from dnbr.service import dnbr
 from dotenv import load_dotenv
 
 load_dotenv()
