@@ -34,7 +34,7 @@ class TestCalrissianContext(unittest.TestCase):
 
             conf = {}
             conf["lenv"] = {"message": ""}
-            conf["lenv"] = {"Identifier": "dnbr"}
+            conf["lenv"] = {"Identifier": "main"}
 
             cls.conf = conf
 

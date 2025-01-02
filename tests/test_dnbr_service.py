@@ -31,7 +31,7 @@ class TestSentinel2DNBRService(unittest.TestCase):
 
         conf = {}
         conf["lenv"] = {"message": ""}
-        conf["lenv"] = {"Identifier": "dnbr"}
+        conf["lenv"] = {"Identifier": "main"}
         conf["tmpPath"] = "/tmp"
 
         cls.conf = conf
