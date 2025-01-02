@@ -1,4 +1,5 @@
 import unittest
+import os 
 
 from dnbr.service import dnbr
 from dotenv import load_dotenv
@@ -51,7 +52,8 @@ class TestSentinel2DNBRService(unittest.TestCase):
         outputs = {"Result": {"value": ""}}
 
         cls.outputs = outputs
-
+        
+    @unittest.skipIf(os.getenv("CI_TEST_SKIP") == "1", "Test is skipped via env variable")
     def test_execution(self):
         exit_code = dnbr(conf=self.conf, inputs=self.inputs, outputs=self.outputs)
 

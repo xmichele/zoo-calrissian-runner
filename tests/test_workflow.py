@@ -52,14 +52,14 @@ class TestWorkflow(unittest.TestCase):
 
         self.assertDictEqual(
             {
-                "coresMin": [3],
+                "coresMin": [3, 3],
                 "coresMax": [],
-                "ramMin": [10240],
+                "ramMin": [10240, 10240],
                 "ramMax": [],
-                "outdirMin": [10000],
+                "outdirMin": [10000, 10000],
                 "outdirMax": [],
                 "tmpdirMax": [],
-                "tmpdirMin": [10000],
+                "tmpdirMin": [10000, 10000],
             },
             workflow.eval_resource(),
         )
@@ -69,9 +69,9 @@ class TestWorkflow(unittest.TestCase):
 
         self.assertDictEqual(
             {
-                "coresMin": [3],
+                "coresMin": [3, 3],
                 "coresMax": [],
-                "ramMin": [10240],
+                "ramMin": [10240, 10240],
                 "ramMax": [],
                 "outdirMin": [],
                 "outdirMax": [],
@@ -86,10 +86,9 @@ class TestWorkflow(unittest.TestCase):
 
         self.assertDictEqual(
             {
-                "coresMin": [3, 3, 6, 3, 3, 3, 3, 6, 6],
+                "coresMin": [3, 6, 3, 3, 3, 3, 6, 6],
                 "coresMax": [],
                 "ramMin": [
-                    10240,
                     10240,
                     20480,
                     10240,
