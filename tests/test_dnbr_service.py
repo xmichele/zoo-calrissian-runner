@@ -1,6 +1,11 @@
 import unittest
 import os 
 
+import sys
+
+# Add a custom directory to sys.path
+sys.path.append('dnbr/')
+
 from dnbr.service import dnbr
 from dotenv import load_dotenv
 
