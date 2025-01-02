@@ -391,7 +391,7 @@ class ZooCalrissianRunner:
             for elem in self.get_workflow_inputs(mandatory=True)
         )
 
-    def execute(self):
+    def execute(self, wall_time=None):
         self.update_status(progress=2, message="Pre-execution hook")
         self.handler.pre_execution_hook()
 
@@ -481,7 +481,7 @@ class ZooCalrissianRunner:
         self.execution = CalrissianExecution(job=job, runtime_context=session)
         self.execution.submit()
 
-        self.execution.monitor(interval=self.monitor_interval)
+        self.execution.monitor(interval=self.monitor_interval, wall_time=wall_time)
 
         if self.execution.is_complete():
             logger.info("execution complete")

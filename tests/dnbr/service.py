@@ -130,7 +130,7 @@ def dnbr(conf, inputs, outputs):
         outputs=outputs,
         execution_handler=CalrissianRunnerExecutionHandler(conf=conf),
     )
-    exit_status = runner.execute()
+    exit_status = runner.execute(wall_time=120)
 
     if exit_status == zoo.SERVICE_SUCCEEDED:
         outputs = runner.outputs
