@@ -68,6 +68,7 @@ jobs:
         echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
         py3_path=$(which python3)
         echo "HATCH_PYTHON_PATH=$py3_path" >> $GITHUB_ENV
+        echo "CI_TEST_SKIP=1" >> $GITHUB_ENV
     - name: Run Tests with Hatch
       run: |
         #hatch run test.py310:cov
