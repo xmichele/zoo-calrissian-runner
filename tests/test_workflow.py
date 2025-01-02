@@ -17,25 +17,25 @@ class TestWorkflow(unittest.TestCase):
             os.path.join("tests", "app-packages", "app-package-1.cwl"),
             "r",
         ) as stream:
-            cls.reference_wf1 = {"cwl": yaml.safe_load(stream), "workflow_id": "dnbr"}
+            cls.reference_wf1 = {"cwl": yaml.safe_load(stream), "workflow_id": "main"}
 
         with open(
             os.path.join("tests", "app-packages", "app-package-2.cwl"),
             "r",
         ) as stream:
-            cls.reference_wf2 = {"cwl": yaml.safe_load(stream), "workflow_id": "dnbr"}
+            cls.reference_wf2 = {"cwl": yaml.safe_load(stream), "workflow_id": "main"}
 
         with open(
             os.path.join("tests", "app-packages", "app-package-3.cwl"),
             "r",
         ) as stream:
-            cls.reference_wf3 = {"cwl": yaml.safe_load(stream), "workflow_id": "dnbr"}
+            cls.reference_wf3 = {"cwl": yaml.safe_load(stream), "workflow_id": "main"}
 
         with open(
             os.path.join("tests", "app-packages", "app-package-4.cwl"),
             "r",
         ) as stream:
-            cls.reference_wf4 = {"cwl": yaml.safe_load(stream), "workflow_id": "dnbr"}
+            cls.reference_wf4 = {"cwl": yaml.safe_load(stream), "workflow_id": "main"}
 
     def test_object_creation(self):
         workflow = Workflow(cwl=self.reference_wf1["cwl"], workflow_id=self.reference_wf1["workflow_id"])
