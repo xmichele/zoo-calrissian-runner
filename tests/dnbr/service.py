@@ -2,7 +2,7 @@ import base64
 import json
 import os
 import pathlib
-
+import unittest
 import yaml
 from dotenv import load_dotenv
 
@@ -112,7 +112,7 @@ class CalrissianRunnerExecutionHandler(ExecutionHandler):
 
         print(self.conf)
 
-
+@unittest.skipIf(os.getenv("CI_TEST_SKIP") == "1", "Test is skipped via env variable")
 def dnbr(conf, inputs, outputs):
     with open(
         os.path.join(

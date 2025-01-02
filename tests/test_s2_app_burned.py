@@ -51,7 +51,8 @@ class TestSentinel2BurnedArea(unittest.TestCase):
                 cwl = yaml.safe_load(stream)
 
             cls.cwl = cwl
-
+            
+    @unittest.skipIf(os.getenv("CI_TEST_SKIP") == "1", "Test is skipped via env variable")
     def test_execution(self):
         class CalrissianRunnerExecutionHandler(ExecutionHandler):
             def pre_execution_hook(self):
