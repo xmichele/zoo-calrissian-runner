@@ -4,7 +4,7 @@ import os
 import sys
 
 # Add a custom directory to sys.path
-sys.path.append('dnbr/')
+sys.path.append('tests/dnbr/')
 
 from dnbr.service import dnbr
 from dotenv import load_dotenv
