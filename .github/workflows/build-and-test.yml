@@ -21,18 +21,6 @@ jobs:
     name: install pyenv
     steps:
     - uses: actions/checkout@v4
-    # - name: setup pyenv
-    #   uses: "gabrielfalcao/pyenv-action@v18"
-    #   with:
-    #     default: 3.10.13
-    #     #versions: 3.8.16, 3.5.7
-    # - name: Create virtualenv for python 3.10
-    #   run: pyenv install --list && pyenv local 3.10.13 && python3 -mvenv .venv31013
-    # - name: Verify Python Versions
-    #   run: |
-    #     source $GITHUB_ENV
-    #     python --version
-    #     pyenv versions
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
