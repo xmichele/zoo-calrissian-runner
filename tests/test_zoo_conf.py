@@ -55,7 +55,7 @@ class TestCalrissianContext(unittest.TestCase):
             cls.cwl = cwl
 
     def test_zoo_object(self):
-        self.assertEquals(self.zoo.SERVICE_SUCCEEDED, 3)
+        self.assertEqual(self.zoo.SERVICE_SUCCEEDED, 3)
 
     def test_object_creation(self):
         inputs = {
@@ -86,7 +86,7 @@ class TestCalrissianContext(unittest.TestCase):
         outputs = {"Result": {"value": ""}}
         runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=outputs)
 
-        self.assertEquals(runner.inputs.get_input_value("input_1"), "value1")
+        self.assertEqual(runner.inputs.get_input_value("input_1"), "value1")
 
     def test_wrapper(self):
         inputs = {}
@@ -110,7 +110,7 @@ class TestCalrissianContext(unittest.TestCase):
 
         params = {"param_1": "value1", "param_2": "value2"}
 
-        self.assertEquals(params, runner.get_processing_parameters())
+        self.assertEqual(params, runner.get_processing_parameters())
 
     def test_get_workflow(self):
         inputs = {}
@@ -136,7 +136,7 @@ class TestCalrissianContext(unittest.TestCase):
         outputs = {"Result": {"value": ""}}
         runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=outputs)
 
-        self.assertEquals(
+        self.assertEqual(
             set(["pre_stac_item", "post_stac_item", "aoi", "bands"]),
             set(runner.cwl.get_workflow_inputs()),
         )
@@ -146,7 +146,7 @@ class TestCalrissianContext(unittest.TestCase):
         outputs = {"Result": {"value": ""}}
         runner = ZooCalrissianRunner(cwl=self.cwl, conf=self.conf, inputs=inputs, outputs=outputs)
 
-        self.assertEquals(
+        self.assertEqual(
             set(["pre_stac_item", "post_stac_item", "aoi", "bands"]),
             set(runner.get_workflow_inputs()),
         )
